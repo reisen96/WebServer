@@ -19,6 +19,7 @@ public:
 
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 	void bindToPort();
+	void listenState(int backlog = 0);
 	void close();
 };
 

@@ -30,6 +30,15 @@ void Socket::bindToPort()
 	}
 }
 
+void Socket::listenState(int backlog)
+{
+	if (listen(windowsSocket, backlog) == SOCKET_ERROR) 
+	{
+		WSACleanup();
+		throw NetworkException(std::string("Socket listening error: ") + std::to_string(WSAGetLastError()));
+	}
+}
+
 void Socket::close() 
 {
 	closesocket(windowsSocket);
