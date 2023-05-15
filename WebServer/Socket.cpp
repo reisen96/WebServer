@@ -1,8 +1,26 @@
 #include "Socket.h"
 
+Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress)
+{
+	this->windowsSocket = windowsSocket;
+	this->socketAddress = socketAddress;
+}
+
 Socket::~Socket()
 {
 	close();
+}
+
+Socket Socket::acceptConnection()
+{
+	sockaddr_in incomingSocketAddress;
+	int incomingSocketAddressLength = sizeof(incomingSocketAddress);
+	SOCKET incomingSocket = accept(windowsSocket, (struct sockaddr*)&incomingSocketAddress, &incomingSocketAddressLength);
+	if (incomingSocket == INVALID_SOCKET) 
+	{
+		throw NetworkException(std::string("Connection accept error: ") + std::to_string(WSAGetLastError()));
+	}
+	return Socket(incomingSocket, incomingSocketAddress);
 }
 
 void Socket::initialize(const std::string& ipAddress, unsigned short port, int type, int protocol)
