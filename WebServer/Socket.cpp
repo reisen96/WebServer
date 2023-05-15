@@ -39,6 +39,15 @@ void Socket::listenState(int backlog)
 	}
 }
 
+void Socket::setMode(bool blocking) 
+{
+	unsigned long mode = blocking ? 0u : 1u;
+	if (ioctlsocket(windowsSocket, FIONBIO, &mode) != 0)
+	{
+		throw NetworkException(std::string("Socket mode error: ") + std::to_string(WSAGetLastError()));
+	}
+}
+
 void Socket::close() 
 {
 	closesocket(windowsSocket);
