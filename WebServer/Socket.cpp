@@ -1,5 +1,10 @@
 #include "Socket.h"
 
+Socket::Socket()
+{
+	socketState = SocketState::Inactive;
+}
+
 Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState)
 {
 	this->windowsSocket = windowsSocket;
@@ -30,7 +35,6 @@ Socket Socket::acceptConnection()
 void Socket::initialize(const std::string& ipAddress, unsigned short port, int type, int protocol)
 {
 	WSAData wsaData;
-	socketState = SocketState::Inactive;
 	if (NO_ERROR != WSAStartup(MAKEWORD(majorWinsockVersion, minorWinsockVersion), &wsaData))
 		throw NetworkException(std::string("Error initializing Winsock"));
 	windowsSocket = socket(AF_INET, type, protocol);
@@ -53,7 +57,7 @@ void Socket::bindToPort()
 	}
 }
 
-void Socket::listenState(int backlog)
+void Socket::setListen(int backlog)
 {
 	if (listen(windowsSocket, backlog) == SOCKET_ERROR)
 		throw NetworkException(std::string("Socket listening error: ") + std::to_string(WSAGetLastError()));

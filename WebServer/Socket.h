@@ -26,6 +26,7 @@ private:
 	
 public:
 
+	Socket();
 	~Socket();
 
 	SOCKET getWindowsSocket() { return windowsSocket; }
@@ -43,7 +44,7 @@ public:
 
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 	void bindToPort();
-	void listenState(int backlog = 0);
+	void setListen(int backlog = 0);
 	void setMode(bool blocking);
 	void setReceive() { socketState = SocketState::Receive; }
 	void setSend() { socketState = SocketState::Send; }
