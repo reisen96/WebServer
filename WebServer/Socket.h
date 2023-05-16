@@ -2,6 +2,8 @@
 
 #include "NetworkException.h"
 
+constexpr int bufferSize = 255;
+
 class Socket
 {
 private:
@@ -18,6 +20,7 @@ private:
 	SOCKET windowsSocket;
 	sockaddr_in socketAddress;
 	SocketState socketState;
+	char socketBuffer[bufferSize];
 
 	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState = SocketState::Inactive);
 	
@@ -26,6 +29,10 @@ public:
 	~Socket();
 
 	SOCKET getWindowsSocket() { return windowsSocket; }
+	char* getBuffer() { return socketBuffer; }
+	int getBufferSize() { return bufferSize; }
+
+	char& operator[](int index);
 
 	Socket acceptConnection();
 

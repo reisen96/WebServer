@@ -12,6 +12,11 @@ Socket::~Socket()
 	close();
 }
 
+char& Socket::operator[](int index) 
+{
+	return socketBuffer[index];
+}
+
 Socket Socket::acceptConnection()
 {
 	sockaddr_in incomingSocketAddress;
