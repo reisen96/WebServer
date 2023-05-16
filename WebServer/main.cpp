@@ -2,8 +2,14 @@
 
 int main(int argc, char* argv[]) {
 
-	WebServer webServer;
-	webServer.run();
-
+	try
+	{
+		WebServer webServer;
+		webServer.run();
+	}
+	catch (std::exception exception) 
+	{
+		std::cout << exception.what() << std::endl;
+	}
 	return 0;
 }
