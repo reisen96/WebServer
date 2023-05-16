@@ -1,9 +1,10 @@
 #include "Socket.h"
 
-Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress)
+Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState)
 {
 	this->windowsSocket = windowsSocket;
 	this->socketAddress = socketAddress;
+	this->socketState = socketState;
 }
 
 Socket::~Socket()
@@ -16,16 +17,15 @@ Socket Socket::acceptConnection()
 	sockaddr_in incomingSocketAddress;
 	int incomingSocketAddressLength = sizeof(incomingSocketAddress);
 	SOCKET incomingSocket = accept(windowsSocket, (struct sockaddr*)&incomingSocketAddress, &incomingSocketAddressLength);
-	if (incomingSocket == INVALID_SOCKET) 
-	{
-		throw NetworkException(std::string("Connection accept error: ") + std::to_string(WSAGetLastError()));
-	}
-	return Socket(incomingSocket, incomingSocketAddress);
+	if (incomingSocket == INVALID_SOCKET)
+		throw NetworkException(std::string("TCP connection accept error: ") + std::to_string(WSAGetLastError()));
+	return Socket(incomingSocket, incomingSocketAddress, SocketState::Receive);
 }
 
 void Socket::initialize(const std::string& ipAddress, unsigned short port, int type, int protocol)
 {
 	WSAData wsaData;
+	socketState = SocketState::Inactive;
 	if (NO_ERROR != WSAStartup(MAKEWORD(majorWinsockVersion, minorWinsockVersion), &wsaData))
 		throw NetworkException(std::string("Error initializing Winsock"));
 	windowsSocket = socket(AF_INET, type, protocol);
@@ -50,20 +50,16 @@ void Socket::bindToPort()
 
 void Socket::listenState(int backlog)
 {
-	if (listen(windowsSocket, backlog) == SOCKET_ERROR) 
-	{
-		WSACleanup();
+	if (listen(windowsSocket, backlog) == SOCKET_ERROR)
 		throw NetworkException(std::string("Socket listening error: ") + std::to_string(WSAGetLastError()));
-	}
+	socketState = SocketState::Listen;
 }
 
 void Socket::setMode(bool blocking) 
 {
 	unsigned long mode = blocking ? 0u : 1u;
 	if (ioctlsocket(windowsSocket, FIONBIO, &mode) != 0)
-	{
 		throw NetworkException(std::string("Socket mode error: ") + std::to_string(WSAGetLastError()));
-	}
 }
 
 void Socket::close() 

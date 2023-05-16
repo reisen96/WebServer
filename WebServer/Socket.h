@@ -6,12 +6,20 @@ class Socket
 {
 private:
 
+	enum class SocketState {
+		Inactive,
+		Listen,
+		Receive,
+		Send
+	};
+
 	const int majorWinsockVersion = 2;
 	const int minorWinsockVersion = 2;
 	SOCKET windowsSocket;
 	sockaddr_in socketAddress;
+	SocketState socketState;
 
-	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress);
+	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState = SocketState::Inactive);
 	
 public:
 
@@ -21,10 +29,17 @@ public:
 
 	Socket acceptConnection();
 
+	bool isInactive() { return socketState == SocketState::Inactive; }
+	bool listenState() { return socketState == SocketState::Listen; }
+	bool receiveState() { return socketState == SocketState::Receive; }
+	bool sendState() { return socketState == SocketState::Send; }
+
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 	void bindToPort();
 	void listenState(int backlog = 0);
 	void setMode(bool blocking);
+	void setReceive() { socketState = SocketState::Receive; }
+	void setSend() { socketState = SocketState::Send; }
 	void close();
 };
 
