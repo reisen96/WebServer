@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <vector>
 #include <unordered_map>
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
