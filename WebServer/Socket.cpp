@@ -76,3 +76,18 @@ void Socket::close()
 	closesocket(windowsSocket);
 	WSACleanup();
 }
+
+bool Socket::checkValidResponse()
+{
+	
+}
+
+void Socket::generateValidResponse()
+{
+
+}
+
+void Socket::generateInvalidResponse()
+{
+
+}

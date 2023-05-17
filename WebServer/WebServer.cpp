@@ -67,7 +67,7 @@ void WebServer::run()
 
 void WebServer::sendResponse(Socket& socket)
 {
-	socket.getClient().RESPONSE_MESSAGE = { "HTTP/1.1 " };
+	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
 
 	if (socket.checkValidResponse())
 	{
@@ -78,10 +78,10 @@ void WebServer::sendResponse(Socket& socket)
 		socket.generateInvalidResponse();
 	}
 
-	socket.getClient().resetRequest();
+	socket.getClientRequest().resetRequest();
 	
-	int total_size_to_send = socket.getClient().RESPONSE_MESSAGE.size();
-	int bytes_sent = send(socket.getWindowsSocket(), socket.getClient().RESPONSE_MESSAGE.data(), total_size_to_send, 0);
+	int total_size_to_send = socket.getClientResponse().RESPONSE_MESSAGE.size();
+	int bytes_sent = send(socket.getWindowsSocket(), socket.getClientResponse().RESPONSE_MESSAGE.data(), total_size_to_send, 0);
 
 	if (SOCKET_ERROR == bytes_sent)
 	{
@@ -90,7 +90,7 @@ void WebServer::sendResponse(Socket& socket)
 	}
 
 	socket.setReceive();
-	if (socket.getClient().HEADER_CONNECTION == "close")
+	if (socket.getClientRequest().HEADER_CONNECTION == "close")
 	{
 		socket.setInactive();
 	}

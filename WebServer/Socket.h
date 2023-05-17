@@ -19,7 +19,7 @@ private:
 	const int majorWinsockVersion = 2;
 	const int minorWinsockVersion = 2;
 	SOCKET windowsSocket;
-	Client client;
+	Client clientRequest, clientResponse;
 	sockaddr_in socketAddress;
 	SocketState socketState;
 
@@ -44,7 +44,12 @@ public:
 	bool listenState() { return socketState == SocketState::Listen; }
 	bool receiveState() { return socketState == SocketState::Receive; }
 	bool sendState() { return socketState == SocketState::Send; }
-	Client getClient() { return client; }
+	Client getClientRequest() { return clientRequest; }
+	Client getClientResponse() { return clientResponse; }
+
+	bool checkValidResponse();
+	void generateValidResponse();
+	void generateInvalidResponse();
 
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 
