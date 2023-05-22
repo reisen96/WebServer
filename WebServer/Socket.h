@@ -3,6 +3,9 @@
 #include "NetworkException.h"
 #include "Client.h"
 
+#define BUFF_SIZE 4096u
+#define MAX_SOCKETS 50u
+
 constexpr int bufferSize = 255;
 
 class Socket
@@ -50,6 +53,10 @@ public:
 	bool checkValidResponse();
 	void generateValidResponse();
 	void generateInvalidResponse();
+	void addMessage();
+	void getRequest();
+	char* getMessage();
+	void cleanSocket();
 
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 

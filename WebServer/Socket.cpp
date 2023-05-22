@@ -91,3 +91,71 @@ void Socket::generateInvalidResponse()
 {
 
 }
+
+void Socket::addMessage()
+{
+
+}
+
+void Socket::getRequest()
+{
+	if (get_message_from_socket(curr_socket))
+	{
+		getRequestDetails();
+		// sock_handler.get_request_details(curr_socket);
+	}
+	else
+		std::cout << "socket:" << windowsSocket << " contained corrupted/blank message. Aborting." << std::endl;
+}
+
+char* Socket::getMessage()
+{
+	char* cbuffer = new char[BUFF_SIZE] {0};
+	int cbuffer_capacity = BUFF_SIZE;
+	bool socketEmpty = false;
+	int bytesReceived = 0, total_bytesReceived = 0;
+
+	for (int iter = 0; !socketEmpty && iter < MAX_SOCKETS; ++iter)
+	{
+		bytesReceived = recv(windowsSocket, cbuffer + total_bytesReceived, cbuffer_capacity, NULL);
+
+		if (!iter && (!bytesReceived || bytesReceived == SOCKET_ERROR))
+		{
+			std::cout << "serv: Error at recv(): " << WSAGetLastError() << std::endl;
+			closesocket(windowsSocket);
+			cleanSocket();
+			delete[] cbuffer;
+			return NULL;
+		}
+
+		if (iter && bytesReceived == SOCKET_ERROR) socketEmpty = true;
+		else total_bytesReceived += bytesReceived;
+
+		if (total_bytesReceived == cbuffer_capacity)
+		{
+			cbuffer_capacity *= 2;
+			char* tmp = new char[cbuffer_capacity] {0};
+			memcpy(tmp, cbuffer, total_bytesReceived);
+			delete[] cbuffer;
+			cbuffer = tmp;
+		}
+	}
+
+	cbuffer[total_bytesReceived] = '\0';
+	clientRequest.MESSAGE.resize(total_bytesReceived);
+	clientRequest.MESSAGE.shrink_to_fit();
+
+	socketState = SocketState::Send;
+	clientRequest.getRequest();
+	clientRequest.getHeader();
+
+	return cbuffer;
+}
+
+void Socket::cleanSocket()
+{
+	socketState = SocketState::Inactive;
+	windowsSocket = 0;
+	clientRequest.cleanRequest();
+	clientResponse.cleanResponse();
+}

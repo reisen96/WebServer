@@ -42,11 +42,11 @@ void WebServer::run()
 			{
 				if (socket.listenState())
 				{
-					socket.addMessage();
+					socket.addMessage(); // Not yet implemented
 				}
 				else if (socket.receiveState())
 				{
-					socket.getRequest();
+					socket.getRequest(); // Not yet implemented
 				}
 			}
 		}
@@ -69,13 +69,13 @@ void WebServer::sendResponse(Socket& socket)
 {
 	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
 
-	if (socket.checkValidResponse())
+	if (socket.checkValidResponse()) // Not yet implemented
 	{
-		socket.generateValidResponse();
+		socket.generateValidResponse(); // Not yet implemented
 	}
 	else 
 	{
-		socket.generateInvalidResponse();
+		socket.generateInvalidResponse(); // Not yet implemented
 	}
 
 	socket.getClientRequest().resetRequest();
