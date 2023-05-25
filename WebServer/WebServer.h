@@ -17,6 +17,7 @@ public:
 	WebServer();
 	~WebServer();
 
+	void receiveRequest(Socket& socket);
 	void sendResponse(Socket& socket);
 
 	void run();

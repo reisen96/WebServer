@@ -21,7 +21,6 @@ void WebServer::run()
 	int readySockets;
 	while (true) 
 	{
-		// Select
 		FD_ZERO(&receiveSockets);
 		FD_ZERO(&sendSockets);
 		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
@@ -35,34 +34,33 @@ void WebServer::run()
 		if (readySockets == SOCKET_ERROR)
 			throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
 
-		// Handle
-		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+		for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 		{
-			if (FD_ISSET(socket.getWindowsSocket(), &receiveSockets))
+			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
 			{
-				if (socket.listenState())
-				{
-					socket.addMessage(); // Not yet implemented
-				}
-				else if (socket.receiveState())
-				{
-					socket.getRequest(); // Not yet implemented
-				}
+				--readySockets;
+				if (serverSockets[i].listenState())
+					serverSockets[i].acceptConnection();
+				else if (serverSockets[i].receiveState())
+					; // Receive...
 			}
 		}
 
-		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+		for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 		{
-			if (FD_ISSET(socket.getWindowsSocket(), &sendSockets))
+			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &sendSockets))
 			{
-				if (socket.sendState())
-				{
-					sendResponse(socket);
-				}
+				--readySockets;
+				if (serverSockets[i].sendState())
+					; // Send...
 			}
 		}
-
 	}
+}
+
+void WebServer::receiveRequest(Socket& socket)
+{
+
 }
 
 void WebServer::sendResponse(Socket& socket)

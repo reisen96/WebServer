@@ -3,10 +3,7 @@
 #include "NetworkException.h"
 #include "Client.h"
 
-#define BUFF_SIZE 4096u
-#define MAX_SOCKETS 50u
-
-constexpr int bufferSize = 255;
+constexpr int bufferSize = 4096;
 
 class Socket
 {
