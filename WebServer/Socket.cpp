@@ -91,9 +91,10 @@ void Socket::close()
 	closesocket(windowsSocket);
 }
 
+/*
 bool Socket::checkValidResponse()
 {
-	
+
 }
 
 void Socket::generateValidResponse()
@@ -173,3 +174,7 @@ void Socket::cleanSocket()
 	clientRequest.cleanRequest();
 	clientResponse.cleanResponse();
 }
+
+
+
+*/

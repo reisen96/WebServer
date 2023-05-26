@@ -40,14 +40,14 @@ void WebServer::run()
 			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
 			{
 				--readySockets;
-				if (serverSockets[i].listenState()) 
+				if (serverSockets[i].listenState())
 				{
 					Socket newSocket = serverSockets[i].acceptConnection();
 					newSocket.setMode(false);
 					serverSockets.push_back(newSocket);
 				}
 				else if (serverSockets[i].receiveState())
-					; // Receive...
+					receiveRequest(serverSockets[i]);
 			}
 		}
 
@@ -57,7 +57,7 @@ void WebServer::run()
 			{
 				--readySockets;
 				if (serverSockets[i].sendState())
-					; // Send...
+					sendResponse(serverSockets[i]);
 			}
 		}
 	}
@@ -70,6 +70,7 @@ void WebServer::receiveRequest(Socket& socket)
 
 void WebServer::sendResponse(Socket& socket)
 {
+	/*
 	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
 
 	if (socket.checkValidResponse()) // Not yet implemented
@@ -97,4 +98,7 @@ void WebServer::sendResponse(Socket& socket)
 	{
 		socket.setInactive();
 	}
+	
+	
+	*/
 }
