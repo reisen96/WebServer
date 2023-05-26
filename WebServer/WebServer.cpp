@@ -1,10 +1,11 @@
 #include "WebServer.h"
 
-WebServer::WebServer() 
+WebServer::WebServer()
 {
 	Socket listenSocket;
 	listenSocket.initialize("", serverPort, SOCK_STREAM, IPPROTO_TCP);
 	listenSocket.bindToPort();
+	listenSocket.setMode(false);
 	listenSocket.setListen(serverBacklog);
 	serverSockets.push_back(listenSocket);
 }
@@ -27,7 +28,7 @@ void WebServer::run()
 		{
 			if (socket.listenState() || socket.receiveState())
 				FD_SET(socket.getWindowsSocket(), &receiveSockets);
-			else if (socket.sendState())
+			if (socket.sendState())
 				FD_SET(socket.getWindowsSocket(), &sendSockets);
 		}
 		readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
@@ -39,8 +40,12 @@ void WebServer::run()
 			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
 			{
 				--readySockets;
-				if (serverSockets[i].listenState())
-					serverSockets[i].acceptConnection();
+				if (serverSockets[i].listenState()) 
+				{
+					Socket newSocket = serverSockets[i].acceptConnection();
+					newSocket.setMode(false);
+					serverSockets.push_back(newSocket);
+				}
 				else if (serverSockets[i].receiveState())
 					; // Receive...
 			}

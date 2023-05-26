@@ -1,7 +1,6 @@
 #pragma once
 
 #include "NetworkException.h"
-#include "Client.h"
 
 constexpr int bufferSize = 4096;
 
@@ -19,18 +18,21 @@ private:
 	const int majorWinsockVersion = 2;
 	const int minorWinsockVersion = 2;
 	SOCKET windowsSocket;
-	Client clientRequest, clientResponse;
 	sockaddr_in socketAddress;
-	SocketState socketState;
-
+	SocketState socketReceiveState;
+	SocketState socketSendState;
 	char socketBuffer[bufferSize];
 
-	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState = SocketState::Inactive);
+	// Client clientRequest, clientResponse; // ???
+
+	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
 	
 public:
 
 	Socket();
 	~Socket();
+
+	Socket& operator=(const Socket& other);
 
 	SOCKET getWindowsSocket() { return windowsSocket; }
 	char* getBuffer() { return socketBuffer; }
@@ -40,28 +42,29 @@ public:
 
 	Socket acceptConnection();
 
-	bool isInactive() { return socketState == SocketState::Inactive; }
-	bool listenState() { return socketState == SocketState::Listen; }
-	bool receiveState() { return socketState == SocketState::Receive; }
-	bool sendState() { return socketState == SocketState::Send; }
-	Client getClientRequest() { return clientRequest; }
-	Client getClientResponse() { return clientResponse; }
-
-	bool checkValidResponse();
-	void generateValidResponse();
-	void generateInvalidResponse();
-	void addMessage();
-	void getRequest();
-	char* getMessage();
-	void cleanSocket();
-
+	bool isInactive() { return socketReceiveState == SocketState::Inactive && socketSendState == SocketState::Inactive; }
+	bool listenState() { return socketReceiveState == SocketState::Listen; }
+	bool receiveState() { return socketReceiveState == SocketState::Receive; }
+	bool sendState() { return socketSendState == SocketState::Send; }
+	
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 
 	void bindToPort();
 	void setListen(int backlog = 0);
 	void setMode(bool blocking);
-	void setReceive() { socketState = SocketState::Receive; }
-	void setSend() { socketState = SocketState::Send; }
-	void setInactive() { socketState = SocketState::Inactive; }
+	void setReceive() { socketReceiveState = SocketState::Receive; }
+	void setSend() { socketSendState = SocketState::Send; }
+	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
+
+	// Client getClientRequest() { return clientRequest; }
+	// Client getClientResponse() { return clientResponse; }
+
+	// bool checkValidResponse();
+	// void generateValidResponse();
+	// void generateInvalidResponse();
+	// void addMessage();
+	// void getRequest();
+	// char* getMessage();
+	// void cleanSocket();
 };
