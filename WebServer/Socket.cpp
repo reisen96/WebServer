@@ -4,6 +4,7 @@ Socket::Socket()
 {
 	socketReceiveState = SocketState::Inactive;
 	socketSendState = SocketState::Inactive;
+	bufferPosition = 0;
 }
 
 Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState, SocketState sendState)
@@ -12,6 +13,7 @@ Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState re
 	this->socketAddress = socketAddress;
 	this->socketReceiveState = receiveState;
 	this->socketSendState = sendState;
+	bufferPosition = 0;
 }
 
 Socket::~Socket()
@@ -27,12 +29,25 @@ Socket& Socket::operator=(const Socket& other)
 	this->socketAddress = other.socketAddress;
 	this->socketReceiveState = other.socketReceiveState;
 	this->socketSendState = other.socketSendState;
+	bufferPosition = 0;
 	return *this;
 }
 
 char& Socket::operator[](int index) 
 {
 	return socketBuffer[index];
+}
+
+Socket& Socket::operator+=(const int difference)
+{
+	bufferPosition += difference;
+	return *this;
+}
+
+Socket& Socket::operator-=(const int difference)
+{
+	bufferPosition -= difference;
+	return *this;
 }
 
 Socket Socket::acceptConnection()

@@ -11,14 +11,16 @@ private:
 	std::vector<Socket> serverSockets;
 	fd_set receiveSockets;
 	fd_set sendSockets;
+
+	void receiveHttpRequest(Socket& socket, int requestSize);
+
+	void receiveRequest(Socket& socket);
+	void sendResponse(Socket& socket);
 	
 public:
 
 	WebServer();
 	~WebServer();
-
-	void receiveRequest(Socket& socket);
-	void sendResponse(Socket& socket);
 
 	void run();
 };

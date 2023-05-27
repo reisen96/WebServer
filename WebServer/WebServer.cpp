@@ -63,9 +63,30 @@ void WebServer::run()
 	}
 }
 
+void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
+{
+	// Client newHttpRequest(socket.getBuffer(),getBufferPosition()-requestSize,getBufferPosition());
+	// socket.setRequest(newHttpRequest);
+	// memcpy(...)
+	// socket -= requestSize;
+}
+
 void WebServer::receiveRequest(Socket& socket)
 {
-
+	int bytesReceived = recv(socket.getWindowsSocket(), &socket[socket.getBufferPosition()], sizeof(socket.getBuffer()) - socket.getBufferPosition(), 0);
+	if (bytesReceived == SOCKET_ERROR)
+	{
+		// Error...
+		return;
+	}
+	if (!bytesReceived) 
+	{
+		socket.close();
+		socket.setInactive(); // Remove later all inactive sockets...
+		return;
+	}
+	socket += bytesReceived;
+	receiveHttpRequest(socket, bytesReceived);
 }
 
 void WebServer::sendResponse(Socket& socket)

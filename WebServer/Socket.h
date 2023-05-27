@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NetworkException.h"
+#include "Client.h"
 
 constexpr int bufferSize = 4096;
 
@@ -21,9 +21,9 @@ private:
 	sockaddr_in socketAddress;
 	SocketState socketReceiveState;
 	SocketState socketSendState;
+	int bufferPosition;
 	char socketBuffer[bufferSize];
-
-	// Client clientRequest, clientResponse; // ???
+	Client httpRequest;
 
 	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
 	
@@ -37,8 +37,11 @@ public:
 	SOCKET getWindowsSocket() { return windowsSocket; }
 	char* getBuffer() { return socketBuffer; }
 	int getBufferSize() { return bufferSize; }
-
+	int getBufferPosition() { return bufferPosition; }
+	
 	char& operator[](int index);
+	Socket& operator+=(const int difference);
+	Socket& operator-=(const int difference);
 
 	Socket acceptConnection();
 
@@ -56,6 +59,12 @@ public:
 	void setSend() { socketSendState = SocketState::Send; }
 	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
+
+	void setRequest(Client& httpRequest) { this->httpRequest = httpRequest; }
+	Client& getRequest() { return httpRequest; }
+
+
+	// Client clientRequest, clientResponse; // ???
 
 	// Client getClientRequest() { return clientRequest; }
 	// Client getClientResponse() { return clientResponse; }
