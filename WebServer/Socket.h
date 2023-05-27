@@ -55,8 +55,8 @@ public:
 	void bindToPort();
 	void setListen(int backlog = 0);
 	void setMode(bool blocking);
-	void setReceive() { socketReceiveState = SocketState::Receive; }
-	void setSend() { socketSendState = SocketState::Send; }
+	void setReceive(bool receiveState) { socketReceiveState = receiveState ? SocketState::Receive : SocketState::Inactive; }
+	void setSend(bool sendState) { socketSendState = sendState ? SocketState::Send : SocketState::Inactive; }
 	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
 
@@ -65,10 +65,8 @@ public:
 
 
 	// Client clientRequest, clientResponse; // ???
-
 	// Client getClientRequest() { return clientRequest; }
 	// Client getClientResponse() { return clientResponse; }
-
 	// bool checkValidResponse();
 	// void generateValidResponse();
 	// void generateInvalidResponse();

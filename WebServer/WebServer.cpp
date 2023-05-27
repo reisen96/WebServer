@@ -63,9 +63,17 @@ void WebServer::run()
 	}
 }
 
+Client WebServer::generateHttpResponse(Client& httpRequest)
+{
+	// Client httpResponse;
+	// if httpRequest.method == GET bla bla bla...
+	// check query bla bla bla, maybe print to console
+	// return httpResponse;
+}
+
 void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
 {
-	// Client newHttpRequest(socket.getBuffer(),getBufferPosition()-requestSize,getBufferPosition());
+	// Client newHttpRequest(socket.getBuffer(),getBufferPosition()-requestSize,getBufferPosition()); --> Check if valid http here...
 	// socket.setRequest(newHttpRequest);
 	// memcpy(...)
 	// socket -= requestSize;
@@ -91,20 +99,33 @@ void WebServer::receiveRequest(Socket& socket)
 
 void WebServer::sendResponse(Socket& socket)
 {
-	/*
+	int bytesSent;
+	char sendBuffer[bufferSize];
+	Client  httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
+	// httpResponse to buffer...
+	bytesSent = send(socket.getWindowsSocket(), sendBuffer, 0/* httpResponse.size... */, 0);
+	if (bytesSent==SOCKET_ERROR )
+	{
+		// Error...
+		return;
+	}
+	socket.setSend(false);
+}
+
+/*
 	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
 
 	if (socket.checkValidResponse()) // Not yet implemented
 	{
 		socket.generateValidResponse(); // Not yet implemented
 	}
-	else 
+	else
 	{
 		socket.generateInvalidResponse(); // Not yet implemented
 	}
 
 	socket.getClientRequest().resetRequest();
-	
+
 	int total_size_to_send = socket.getClientResponse().RESPONSE_MESSAGE.size();
 	int bytes_sent = send(socket.getWindowsSocket(), socket.getClientResponse().RESPONSE_MESSAGE.data(), total_size_to_send, 0);
 
@@ -119,7 +140,4 @@ void WebServer::sendResponse(Socket& socket)
 	{
 		socket.setInactive();
 	}
-	
-	
 	*/
-}
