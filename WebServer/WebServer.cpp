@@ -1,10 +1,11 @@
 #include "WebServer.h"
 
-WebServer::WebServer() 
+WebServer::WebServer()
 {
 	Socket listenSocket;
 	listenSocket.initialize("", serverPort, SOCK_STREAM, IPPROTO_TCP);
 	listenSocket.bindToPort();
+	listenSocket.setMode(false);
 	listenSocket.setListen(serverBacklog);
 	serverSockets.push_back(listenSocket);
 }
@@ -21,65 +22,112 @@ void WebServer::run()
 	int readySockets;
 	while (true) 
 	{
-		// Select
 		FD_ZERO(&receiveSockets);
 		FD_ZERO(&sendSockets);
 		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
 		{
 			if (socket.listenState() || socket.receiveState())
 				FD_SET(socket.getWindowsSocket(), &receiveSockets);
-			else if (socket.sendState())
+			if (socket.sendState())
 				FD_SET(socket.getWindowsSocket(), &sendSockets);
 		}
 		readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
 		if (readySockets == SOCKET_ERROR)
 			throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
 
-		// Handle
-		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+		for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 		{
-			if (FD_ISSET(socket.getWindowsSocket(), &receiveSockets))
+			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
 			{
-				if (socket.listenState())
+				--readySockets;
+				if (serverSockets[i].listenState())
 				{
-					socket.addMessage(); // Not yet implemented
+					Socket newSocket = serverSockets[i].acceptConnection();
+					newSocket.setMode(false);
+					newSocket.setReceive(true);
+					serverSockets.push_back(newSocket);
 				}
-				else if (socket.receiveState())
-				{
-					socket.getRequest(); // Not yet implemented
-				}
+				else if (serverSockets[i].receiveState())
+					receiveRequest(serverSockets[i]);
 			}
 		}
 
-		for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+		for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 		{
-			if (FD_ISSET(socket.getWindowsSocket(), &sendSockets))
+			if (FD_ISSET(serverSockets[i].getWindowsSocket(), &sendSockets))
 			{
-				if (socket.sendState())
-				{
-					sendResponse(socket);
-				}
+				--readySockets;
+				if (serverSockets[i].sendState())
+					sendResponse(serverSockets[i]);
 			}
 		}
-
 	}
+}
+
+Client WebServer::generateHttpResponse(Client& httpRequest)
+{
+	// Client httpResponse;
+	// if httpRequest.method == GET bla bla bla...
+	// check query bla bla bla, maybe print to console
+	// return httpResponse;
+}
+
+void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
+{
+	// Client newHttpRequest(socket.getBuffer(),getBufferPosition()-requestSize,getBufferPosition()); --> Check if valid http here...
+	// socket.setRequest(newHttpRequest);
+	// memcpy(...)
+	// socket -= requestSize;
+}
+
+void WebServer::receiveRequest(Socket& socket)
+{
+	int bytesReceived = recv(socket.getWindowsSocket(), &socket[socket.getBufferPosition()], sizeof(socket.getBuffer()) - socket.getBufferPosition(), 0);
+	if (bytesReceived == SOCKET_ERROR)
+	{
+		// Error...
+		return;
+	}
+	if (!bytesReceived)
+	{
+		socket.close();
+		socket.setInactive(); // Remove later all inactive sockets...
+		return;
+	}
+	socket += bytesReceived;
+	receiveHttpRequest(socket, bytesReceived);
+	socket.setSend(true);
 }
 
 void WebServer::sendResponse(Socket& socket)
 {
+	int bytesSent;
+	char sendBuffer[bufferSize];
+	Client  httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
+	// httpResponse to buffer...
+	bytesSent = send(socket.getWindowsSocket(), sendBuffer, 0/* httpResponse.size... */, 0);
+	if (bytesSent == SOCKET_ERROR)
+	{
+		// Error...
+		return;
+	}
+	socket.setSend(false);
+}
+
+/*
 	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
 
 	if (socket.checkValidResponse()) // Not yet implemented
 	{
 		socket.generateValidResponse(); // Not yet implemented
 	}
-	else 
+	else
 	{
 		socket.generateInvalidResponse(); // Not yet implemented
 	}
 
 	socket.getClientRequest().resetRequest();
-	
+
 	int total_size_to_send = socket.getClientResponse().RESPONSE_MESSAGE.size();
 	int bytes_sent = send(socket.getWindowsSocket(), socket.getClientResponse().RESPONSE_MESSAGE.data(), total_size_to_send, 0);
 
@@ -94,4 +142,4 @@ void WebServer::sendResponse(Socket& socket)
 	{
 		socket.setInactive();
 	}
-}
+	*/

@@ -1,12 +1,8 @@
 #pragma once
 
-#include "NetworkException.h"
 #include "Client.h"
 
-#define BUFF_SIZE 4096u
-#define MAX_SOCKETS 50u
-
-constexpr int bufferSize = 255;
+constexpr int bufferSize = 4096;
 
 class Socket
 {
@@ -22,49 +18,60 @@ private:
 	const int majorWinsockVersion = 2;
 	const int minorWinsockVersion = 2;
 	SOCKET windowsSocket;
-	Client clientRequest, clientResponse;
 	sockaddr_in socketAddress;
-	SocketState socketState;
-
+	SocketState socketReceiveState;
+	SocketState socketSendState;
+	int bufferPosition;
 	char socketBuffer[bufferSize];
+	Client httpRequest;
 
-	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState = SocketState::Inactive);
+	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
 	
 public:
 
 	Socket();
 	~Socket();
 
+	Socket& operator=(const Socket& other);
+
 	SOCKET getWindowsSocket() { return windowsSocket; }
 	char* getBuffer() { return socketBuffer; }
 	int getBufferSize() { return bufferSize; }
-
+	int getBufferPosition() { return bufferPosition; }
+	
 	char& operator[](int index);
+	Socket& operator+=(const int difference);
+	Socket& operator-=(const int difference);
 
 	Socket acceptConnection();
 
-	bool isInactive() { return socketState == SocketState::Inactive; }
-	bool listenState() { return socketState == SocketState::Listen; }
-	bool receiveState() { return socketState == SocketState::Receive; }
-	bool sendState() { return socketState == SocketState::Send; }
-	Client getClientRequest() { return clientRequest; }
-	Client getClientResponse() { return clientResponse; }
-
-	bool checkValidResponse();
-	void generateValidResponse();
-	void generateInvalidResponse();
-	void addMessage();
-	void getRequest();
-	char* getMessage();
-	void cleanSocket();
-
+	bool isInactive() { return socketReceiveState == SocketState::Inactive && socketSendState == SocketState::Inactive; }
+	bool listenState() { return socketReceiveState == SocketState::Listen; }
+	bool receiveState() { return socketReceiveState == SocketState::Receive; }
+	bool sendState() { return socketSendState == SocketState::Send; }
+	
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 
 	void bindToPort();
 	void setListen(int backlog = 0);
 	void setMode(bool blocking);
-	void setReceive() { socketState = SocketState::Receive; }
-	void setSend() { socketState = SocketState::Send; }
-	void setInactive() { socketState = SocketState::Inactive; }
+	void setReceive(bool receiveState) { socketReceiveState = receiveState ? SocketState::Receive : SocketState::Inactive; }
+	void setSend(bool sendState) { socketSendState = sendState ? SocketState::Send : SocketState::Inactive; }
+	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
+
+	void setRequest(Client& httpRequest) { this->httpRequest = httpRequest; }
+	Client& getRequest() { return httpRequest; }
+
+
+	// Client clientRequest, clientResponse; // ???
+	// Client getClientRequest() { return clientRequest; }
+	// Client getClientResponse() { return clientResponse; }
+	// bool checkValidResponse();
+	// void generateValidResponse();
+	// void generateInvalidResponse();
+	// void addMessage();
+	// void getRequest();
+	// char* getMessage();
+	// void cleanSocket();
 };

@@ -2,14 +2,18 @@
 
 Socket::Socket()
 {
-	socketState = SocketState::Inactive;
+	socketReceiveState = SocketState::Inactive;
+	socketSendState = SocketState::Inactive;
+	bufferPosition = 0;
 }
 
-Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState socketState)
+Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState, SocketState sendState)
 {
 	this->windowsSocket = windowsSocket;
 	this->socketAddress = socketAddress;
-	this->socketState = socketState;
+	this->socketReceiveState = receiveState;
+	this->socketSendState = sendState;
+	bufferPosition = 0;
 }
 
 Socket::~Socket()
@@ -17,9 +21,33 @@ Socket::~Socket()
 	close();
 }
 
+Socket& Socket::operator=(const Socket& other)
+{
+	if (this == &other)
+		return *this;
+	this->windowsSocket = other.windowsSocket;
+	this->socketAddress = other.socketAddress;
+	this->socketReceiveState = other.socketReceiveState;
+	this->socketSendState = other.socketSendState;
+	bufferPosition = 0;
+	return *this;
+}
+
 char& Socket::operator[](int index) 
 {
 	return socketBuffer[index];
+}
+
+Socket& Socket::operator+=(const int difference)
+{
+	bufferPosition += difference;
+	return *this;
+}
+
+Socket& Socket::operator-=(const int difference)
+{
+	bufferPosition -= difference;
+	return *this;
 }
 
 Socket Socket::acceptConnection()
@@ -61,7 +89,7 @@ void Socket::setListen(int backlog)
 {
 	if (listen(windowsSocket, backlog) == SOCKET_ERROR)
 		throw NetworkException(std::string("Socket listening error: ") + std::to_string(WSAGetLastError()));
-	socketState = SocketState::Listen;
+	socketReceiveState = SocketState::Listen;
 }
 
 void Socket::setMode(bool blocking) 
@@ -73,13 +101,15 @@ void Socket::setMode(bool blocking)
 
 void Socket::close() 
 {
+	socketReceiveState = SocketState::Inactive;
+	socketSendState = SocketState::Inactive;
 	closesocket(windowsSocket);
-	WSACleanup();
 }
 
+/*
 bool Socket::checkValidResponse()
 {
-	
+
 }
 
 void Socket::generateValidResponse()
@@ -145,7 +175,7 @@ char* Socket::getMessage()
 	clientRequest.MESSAGE.resize(total_bytesReceived);
 	clientRequest.MESSAGE.shrink_to_fit();
 
-	socketState = SocketState::Send;
+	socketReceiveState = SocketState::Send;
 	clientRequest.getRequest();
 	clientRequest.getHeader();
 
@@ -154,8 +184,12 @@ char* Socket::getMessage()
 
 void Socket::cleanSocket()
 {
-	socketState = SocketState::Inactive;
+	socketReceiveState = SocketState::Inactive;
 	windowsSocket = 0;
 	clientRequest.cleanRequest();
 	clientResponse.cleanResponse();
 }
+
+
+
+*/
