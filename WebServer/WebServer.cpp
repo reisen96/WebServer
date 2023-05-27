@@ -44,6 +44,7 @@ void WebServer::run()
 				{
 					Socket newSocket = serverSockets[i].acceptConnection();
 					newSocket.setMode(false);
+					newSocket.setReceive(true);
 					serverSockets.push_back(newSocket);
 				}
 				else if (serverSockets[i].receiveState())
@@ -87,7 +88,7 @@ void WebServer::receiveRequest(Socket& socket)
 		// Error...
 		return;
 	}
-	if (!bytesReceived) 
+	if (!bytesReceived)
 	{
 		socket.close();
 		socket.setInactive(); // Remove later all inactive sockets...
@@ -95,6 +96,7 @@ void WebServer::receiveRequest(Socket& socket)
 	}
 	socket += bytesReceived;
 	receiveHttpRequest(socket, bytesReceived);
+	socket.setSend(true);
 }
 
 void WebServer::sendResponse(Socket& socket)
@@ -104,7 +106,7 @@ void WebServer::sendResponse(Socket& socket)
 	Client  httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
 	// httpResponse to buffer...
 	bytesSent = send(socket.getWindowsSocket(), sendBuffer, 0/* httpResponse.size... */, 0);
-	if (bytesSent==SOCKET_ERROR )
+	if (bytesSent == SOCKET_ERROR)
 	{
 		// Error...
 		return;
