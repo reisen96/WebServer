@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Client.h"
+#include "HttpMessage.h"
 
 constexpr int bufferSize = 4096;
 
