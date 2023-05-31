@@ -2,20 +2,20 @@
 
 #include "NetworkException.h"
 
+enum class HttpMethod {
+	NONE,
+	GET,
+	POST,
+	PUT,
+	OPTIONS,
+	HEAD,
+	HTTP_DELETE,
+	TRACE
+};
+
 class HttpMessage
 {
 private:
-
-	enum class HttpMethod {
-		NONE,
-		GET,
-		POST,
-		PUT,
-		OPTIONS,
-		HEAD,
-		HTTP_DELETE,
-		TRACE
-	};
 
 	const std::unordered_map<std::string, HttpMethod> stringToMethod =
 	{ {"GET",HttpMethod::GET} ,
@@ -35,16 +35,31 @@ private:
 	int contentLength;
 	std::string httpBody;
 
-	void setHttpMethod(std::string& methodString);
-	void setRequestPath(std::string& requestPath);
-	void setHttpVersion(std::string& httpVersion);
 
-	void setHttpHeaders(std::stringstream& requestString);
 public:
 
 	HttpMessage();
 
+	HttpMethod getHttpMethod() { return httpMethod; }
 	static HttpMessage* buildRequest(char* buffer, int position);
 	static HttpMessage* buildResponse(char* buffer, int position);
+
+	void setStatusCode(int code);
+	void setHttpMethod(std::string& methodString);
+	void setRequestPath(std::string& requestPath);
+	void setHttpVersion(std::string& httpVersion);
+	void setResponseMessage(std::string& response);
+	void setResponseBody(std::string& response);
+	void setHttpHeaders(std::stringstream& requestString);
+
+
+	void generateResponseForGET();
+	void generateResponseForPOST();
+	void generateResponseForPUT();
+	void generateResponseForOPTIONS();
+	void generateResponseForHEAD();
+	void generateResponseForDELETE();
+	void generateResponseForTRACE();
+	void generateResponseForINVALID();
 };
 

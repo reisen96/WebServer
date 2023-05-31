@@ -23,7 +23,7 @@ private:
 	SocketState socketSendState;
 	int bufferPosition;
 	char socketBuffer[bufferSize];
-	Client httpRequest;
+	HttpMessage httpRequest;
 
 	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
 	
@@ -60,8 +60,8 @@ public:
 	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
 
-	void setRequest(Client& httpRequest) { this->httpRequest = httpRequest; }
-	Client& getRequest() { return httpRequest; }
+	void setRequest(HttpMessage& httpRequest) { this->httpRequest = httpRequest; }
+	HttpMessage& getRequest() { return httpRequest; }
 
 
 	// Client clientRequest, clientResponse; // ???
