@@ -64,8 +64,54 @@ void WebServer::run()
 	}
 }
 
-Client WebServer::generateHttpResponse(Client& httpRequest)
+HttpMessage WebServer::generateHttpResponse(HttpMessage& httpRequest)
 {
+	HttpMessage ourResponse;
+	switch (ourResponse.getHttpMethod())
+	{
+		case HttpMethod::GET:
+		{
+			ourResponse.generateResponseForGET();
+			break;
+		}
+		case HttpMethod::POST:
+		{
+			ourResponse.generateResponseForPOST();
+			break;
+		}
+		case HttpMethod::PUT:
+		{
+			ourResponse.generateResponseForPUT();
+			break;
+		}
+		case HttpMethod::OPTIONS:
+		{
+			ourResponse.generateResponseForOPTIONS();
+			break;
+		}
+		case HttpMethod::HEAD:
+		{
+			ourResponse.generateResponseForHEAD();
+			break;
+		}
+		case HttpMethod::HTTP_DELETE:
+		{
+			ourResponse.generateResponseForDELETE();
+			break;
+		}
+		case HttpMethod::TRACE:
+		{
+			ourResponse.generateResponseForTRACE();
+			break;
+		}
+		default:
+		{
+			ourResponse.generateResponseForINVALID();
+			break;
+		}
+	}
+
+	return ourResponse;
 	// Client httpResponse;
 	// if httpRequest.method == GET bla bla bla...
 	// check query bla bla bla, maybe print to console
@@ -74,6 +120,16 @@ Client WebServer::generateHttpResponse(Client& httpRequest)
 
 void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
 {
+	// NAOR:
+	// 
+	// Primor said that we are not being tested for invalid values. So assuming input is valid,
+	// So we just received a message from void WebServer::receiveRequest(Socket& socket)
+	// And we should just send it. So this function is pretty much redundant.
+
+
+	
+
+
 	// Client newHttpRequest(socket.getBuffer(),getBufferPosition()-requestSize,getBufferPosition()); --> Check if valid http here...
 	// socket.setRequest(newHttpRequest);
 	// memcpy(...)
@@ -103,7 +159,7 @@ void WebServer::sendResponse(Socket& socket)
 {
 	int bytesSent;
 	char sendBuffer[bufferSize];
-	Client  httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
+	HttpMessage httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
 	// httpResponse to buffer...
 	bytesSent = send(socket.getWindowsSocket(), sendBuffer, 0/* httpResponse.size... */, 0);
 	if (bytesSent == SOCKET_ERROR)
@@ -113,33 +169,3 @@ void WebServer::sendResponse(Socket& socket)
 	}
 	socket.setSend(false);
 }
-
-/*
-	socket.getClientResponse().RESPONSE_MESSAGE = { "HTTP/1.1 " };
-
-	if (socket.checkValidResponse()) // Not yet implemented
-	{
-		socket.generateValidResponse(); // Not yet implemented
-	}
-	else
-	{
-		socket.generateInvalidResponse(); // Not yet implemented
-	}
-
-	socket.getClientRequest().resetRequest();
-
-	int total_size_to_send = socket.getClientResponse().RESPONSE_MESSAGE.size();
-	int bytes_sent = send(socket.getWindowsSocket(), socket.getClientResponse().RESPONSE_MESSAGE.data(), total_size_to_send, 0);
-
-	if (SOCKET_ERROR == bytes_sent)
-	{
-		std::cout << "Server: Error at send(): " << WSAGetLastError() << std::endl;
-		return;
-	}
-
-	socket.setReceive();
-	if (socket.getClientRequest().HEADER_CONNECTION == "close")
-	{
-		socket.setInactive();
-	}
-	*/

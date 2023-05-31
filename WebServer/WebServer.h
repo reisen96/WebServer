@@ -12,7 +12,7 @@ private:
 	fd_set receiveSockets;
 	fd_set sendSockets;
 
-	Client generateHttpResponse(Client& httpRequest);
+	HttpMessage generateHttpResponse(HttpMessage& httpRequest);
 	void receiveHttpRequest(Socket& socket, int requestSize);
 	void receiveRequest(Socket& socket);
 	void sendResponse(Socket& socket);
