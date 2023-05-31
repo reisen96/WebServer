@@ -7,15 +7,24 @@ class HttpMessage
 private:
 
 	enum class HttpMethod {
+		NONE,
 		GET,
 		POST,
 		PUT,
 		OPTIONS,
 		HEAD,
 		HTTP_DELETE,
-		TRACE,
-		NONE
+		TRACE
 	};
+
+	const std::unordered_map<std::string, HttpMethod> stringToMethod =
+	{ {"GET",HttpMethod::GET} ,
+		{"POST",HttpMethod::POST} ,
+		{"PUT",HttpMethod::PUT} ,
+		{"OPTIONS",HttpMethod::OPTIONS} ,
+		{"HEAD",HttpMethod::HEAD} ,
+		{"DELETE",HttpMethod::HTTP_DELETE} ,
+		{"TRACE",HttpMethod::TRACE} };
 
 	HttpMethod httpMethod;
 	std::string httpVersion;
@@ -27,7 +36,10 @@ private:
 	std::string httpBody;
 
 	void setHttpMethod(std::string& methodString);
+	void setRequestPath(std::string& requestPath);
+	void setHttpVersion(std::string& httpVersion);
 
+	void setHttpHeaders(std::stringstream& requestString);
 public:
 
 	HttpMessage();
