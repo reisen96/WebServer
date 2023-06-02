@@ -42,6 +42,11 @@ void HttpMessage::setHttpHeaders(std::stringstream& requestString)
 	} while (key != "");
 }
 
+void HttpMessage::setHttpBody(std::stringstream& requestString)
+{
+	std::getline(requestString, httpBody, '\0');
+}
+
 HttpMessage::HttpMessage()
 {
 	httpMethod = HttpMethod::GET;
@@ -60,8 +65,7 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 	std::getline(requestString, value, ' ');
 	newMessage->setHttpVersion(value);
 	newMessage->setHttpHeaders(requestString);
-
-
+	newMessage->setHttpBody(requestString);
 	return newMessage;
 }
 

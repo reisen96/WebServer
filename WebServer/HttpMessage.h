@@ -35,6 +35,7 @@ private:
 	int contentLength;
 	std::string httpBody;
 
+	void setHttpBody(std::stringstream& requestString);
 
 public:
 

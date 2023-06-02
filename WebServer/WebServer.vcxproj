@@ -127,14 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Client.cpp" />
     <ClCompile Include="HttpMessage.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="WebServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Client.h" />
     <ClInclude Include="HttpMessage.h" />
     <ClInclude Include="NetworkException.h" />
     <ClInclude Include="Socket.h" />
