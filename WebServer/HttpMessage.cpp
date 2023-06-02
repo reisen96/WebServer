@@ -23,7 +23,7 @@ void HttpMessage::setHttpHeadersAndBody(std::stringstream& requestString)
 		}
 	} while (requestString.str()[requestString.tellg()] != '\r');
 	std::getline(requestString, value);
-	std::getline(requestString, httpBody);
+	std::getline(requestString, httpBody, '\0');
 }
 
 void HttpMessage::initializeResponseHeaders()
@@ -50,5 +50,32 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 
 int HttpMessage::writeToBuffer(char* buffer)
 {
-	return 0;
+	int messageSize = 0;
+	for (char ch : httpVersion)
+		buffer[messageSize++] = ch;
+	buffer[messageSize++] = ' ';
+	for (char ch : std::to_string(statusCode))
+		buffer[messageSize++] = ch;
+	buffer[messageSize++] = ' ';
+	for (char ch : responseMessage)
+		buffer[messageSize++] = ch;
+	buffer[messageSize++] = '\r';
+	buffer[messageSize++] = '\n';
+	for (std::pair<std::string, std::string> header : httpHeaders)
+	{
+		for (char ch : header.first)
+			buffer[messageSize++] = ch;
+		buffer[messageSize++] = ':';
+		buffer[messageSize++] = ' ';
+		for (char ch : header.second)
+			buffer[messageSize++] = ch;
+		buffer[messageSize++] = '\r';
+		buffer[messageSize++] = '\n';
+	}
+	for (char ch : httpBody)
+		buffer[messageSize++] = ch;
+	buffer[messageSize++] = '\r';
+	buffer[messageSize++] = '\n';
+	buffer[messageSize + 1] = '\0';
+	return messageSize;
 }

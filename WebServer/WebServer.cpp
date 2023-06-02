@@ -178,7 +178,11 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 
 void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	std::string requestStrings = httpRequest->getHttpBody();
+	// if path == "/echo...
+	std::cout << requestStrings;
+	httpResponse->setStatusCode(200);
+	httpResponse->setResponseMessage("OK");
 }
 
 void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse)

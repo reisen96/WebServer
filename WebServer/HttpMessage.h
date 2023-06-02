@@ -45,6 +45,7 @@ public:
 	int writeToBuffer(char* buffer);
 
 	HttpMethod getHttpMethod() { return httpMethod; }
+	std::string& getHttpBody() { return httpBody; }
 
 	void initializeResponseHeaders();
 
