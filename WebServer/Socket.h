@@ -30,14 +30,15 @@ private:
 public:
 
 	Socket();
-	~Socket();
 
 	Socket& operator=(const Socket& other);
 
 	SOCKET getWindowsSocket() { return windowsSocket; }
 	char* getBuffer() { return socketBuffer; }
+	char* getBufferAtPosition() { return socketBuffer + bufferPosition; }
 	int getBufferSize() { return bufferSize; }
 	int getBufferPosition() { return bufferPosition; }
+	int getBufferAvailableSpace() { return bufferSize - bufferPosition; }
 	
 	char& operator[](int index);
 	Socket& operator+=(const int difference);

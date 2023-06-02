@@ -23,6 +23,6 @@ private:
 public:
 
 	NetworkException(const std::string& message) { errorMessage = message; }
-	const char* what() { return errorMessage.c_str(); }
+	const char* what() const override { return errorMessage.c_str(); }
 };
 

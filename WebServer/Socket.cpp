@@ -16,11 +16,6 @@ Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState re
 	bufferPosition = 0;
 }
 
-Socket::~Socket()
-{
-	close();
-}
-
 Socket& Socket::operator=(const Socket& other)
 {
 	if (this == &other)

@@ -62,7 +62,7 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 	newMessage->setHttpMethod(value);
 	std::getline(requestString, value, ' ');
 	newMessage->setRequestPath(value);
-	std::getline(requestString, value, ' ');
+	std::getline(requestString, value);
 	newMessage->setHttpVersion(value);
 	newMessage->setHttpHeaders(requestString);
 	newMessage->setHttpBody(requestString);

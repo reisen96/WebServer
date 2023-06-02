@@ -5,8 +5,8 @@ WebServer::WebServer()
 	Socket listenSocket;
 	listenSocket.initialize("", serverPort, SOCK_STREAM, IPPROTO_TCP);
 	listenSocket.bindToPort();
-	listenSocket.setMode(false);
 	listenSocket.setListen(serverBacklog);
+	listenSocket.setMode(false);
 	serverSockets.push_back(listenSocket);
 }
 
@@ -34,8 +34,10 @@ void WebServer::run()
 					FD_SET(socket.getWindowsSocket(), &sendSockets);
 			}
 			readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
-			if (readySockets == SOCKET_ERROR)
+			if (readySockets == SOCKET_ERROR) {
+				std::cout << std::string("Select error: ") + std::to_string(WSAGetLastError()) << std::endl;
 				throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
+			}
 
 			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 			{
@@ -44,10 +46,10 @@ void WebServer::run()
 					--readySockets;
 					if (serverSockets[i].listenState())
 					{
-						Socket newSocket = serverSockets[i].acceptConnection();
+						serverSockets.push_back(serverSockets[i].acceptConnection());
+						Socket& newSocket = serverSockets.back();
 						newSocket.setMode(false);
 						newSocket.setReceive(true);
-						serverSockets.push_back(newSocket);
 					}
 					else if (serverSockets[i].receiveState())
 						receiveRequest(serverSockets[i]);
@@ -130,7 +132,7 @@ void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
 
 void WebServer::receiveRequest(Socket& socket)
 {
-	int bytesReceived = recv(socket.getWindowsSocket(), &socket[socket.getBufferPosition()], sizeof(socket.getBuffer()) - socket.getBufferPosition(), 0);
+	int bytesReceived = recv(socket.getWindowsSocket(), socket.getBufferAtPosition(), socket.getBufferAvailableSpace(), 0);
 	if (bytesReceived == SOCKET_ERROR)
 	{
 		socket.close();
