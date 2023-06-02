@@ -16,7 +16,16 @@ private:
 	void receiveHttpRequest(Socket& socket, int requestSize);
 	void receiveRequest(Socket& socket);
 	void sendResponse(Socket& socket);
-	
+
+	void generateResponseForGET(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForTRACE(HttpMessage* httpRequest, HttpMessage* httpResponse);
+	void generateResponseForINVALID(HttpMessage* httpRequest, HttpMessage* httpResponse);
+
 public:
 
 	WebServer();

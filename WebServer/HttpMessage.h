@@ -36,6 +36,7 @@ private:
 	std::string httpBody;
 
 	void setHttpHeadersAndBody(std::stringstream& requestString);
+	
 public:
 
 	HttpMessage();
@@ -45,6 +46,8 @@ public:
 
 	HttpMethod getHttpMethod() { return httpMethod; }
 
+	void initializeResponseHeaders();
+
 	void setStatusCode(int statusCode) { this->statusCode = statusCode; }
 	void setHttpMethod(std::string& methodString) { httpMethod = stringToMethod.at(methodString); }
 	void setHttpMethod(HttpMethod httpMethod) { this->httpMethod = httpMethod; }
@@ -52,14 +55,5 @@ public:
 	void setHttpVersion(std::string& httpVersion) { this->httpVersion = httpVersion; }
 	void setResponseMessage(std::string& responseMessage) { this->responseMessage = responseMessage; }
 	void setResponseBody(std::string& httpBody) { this->httpBody = httpBody; }
-	
-	void generateResponseForGET();
-	void generateResponseForPOST();
-	void generateResponseForPUT();
-	void generateResponseForOPTIONS();
-	void generateResponseForHEAD();
-	void generateResponseForDELETE();
-	void generateResponseForTRACE();
-	void generateResponseForINVALID();
 };
 

@@ -76,50 +76,50 @@ void WebServer::run()
 HttpMessage* WebServer::generateHttpResponse(HttpMessage* httpRequest)
 {
 	HttpMessage* httpResponse = new HttpMessage;
+	httpResponse->initializeResponseHeaders();
 	switch (httpRequest->getHttpMethod())
 	{
 		case HttpMethod::GET:
 		{
-			httpResponse.generateResponseForGET();
+			generateResponseForGET(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::POST:
 		{
-			httpResponse.generateResponseForPOST();
+			generateResponseForPOST(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::PUT:
 		{
-			httpResponse.generateResponseForPUT();
+			generateResponseForPUT(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::OPTIONS:
 		{
-			httpResponse.generateResponseForOPTIONS();
+			generateResponseForOPTIONS(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::HEAD:
 		{
-			httpResponse.generateResponseForHEAD();
+			generateResponseForHEAD(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::HTTP_DELETE:
 		{
-			httpResponse.generateResponseForDELETE();
+			generateResponseForDELETE(httpRequest, httpResponse);
 			break;
 		}
 		case HttpMethod::TRACE:
 		{
-			httpResponse.generateResponseForTRACE();
+			generateResponseForTRACE(httpRequest, httpResponse);
 			break;
 		}
 		default:
 		{
-			httpResponse.generateResponseForINVALID();
+			generateResponseForINVALID(httpRequest, httpResponse);
 			break;
 		}
 	}
-
 	return httpResponse;
 }
 
@@ -167,4 +167,49 @@ void WebServer::sendResponse(Socket& socket)
 		return;
 	}
 	socket.setSend(false);
+	delete httpRequest;
+	delete httpResponse;
+}
+
+void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+	std::string answer = "Our options are: GET, POST, PUT, OPTIONS, HEAD, DELETE, TRACE";
+	//this->setStatusCode(200);
+	//this->setResponseBody(answer);
+}
+
+void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForTRACE(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+
+}
+
+void WebServer::generateResponseForINVALID(HttpMessage* httpRequest, HttpMessage* httpResponse)
+{
+	std::string answer = "Invalid option!";
+	//this->setResponseBody(answer);
 }

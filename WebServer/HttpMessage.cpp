@@ -26,6 +26,13 @@ void HttpMessage::setHttpHeadersAndBody(std::stringstream& requestString)
 	std::getline(requestString, httpBody);
 }
 
+void HttpMessage::initializeResponseHeaders()
+{
+	httpHeaders["Content-Type"] = "text/html";
+	httpHeaders["Server"] = "EX3 CPP Server";
+	httpHeaders["Content-Length"] = "0";
+}
+
 HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 {
 	std::string value;
@@ -43,34 +50,5 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 
 int HttpMessage::writeToBuffer(char* buffer)
 {
-
-}
-
-void HttpMessage::generateResponseForGET() {
-
-}
-
-void HttpMessage::generateResponseForPOST() {
-
-}
-void HttpMessage::generateResponseForPUT() {
-
-}
-void HttpMessage::generateResponseForOPTIONS() {
-	std::string answer = "Our options are: GET, POST, PUT, OPTIONS, HEAD, DELETE, TRACE";
-	this->setStatusCode(200);
-	this->setResponseBody(answer);
-}
-void HttpMessage::generateResponseForHEAD() {
-
-}
-void HttpMessage::generateResponseForDELETE() {
-
-}
-void HttpMessage::generateResponseForTRACE() {
-
-}
-void HttpMessage::generateResponseForINVALID() {
-	std::string answer = "Invalid option!";
-	this->setResponseBody(answer);
+	return 0;
 }
