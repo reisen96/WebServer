@@ -73,54 +73,54 @@ void WebServer::run()
 	}
 }
 
-HttpMessage WebServer::generateHttpResponse(HttpMessage* httpRequest)
+HttpMessage* WebServer::generateHttpResponse(HttpMessage* httpRequest)
 {
-	HttpMessage response;
-	switch (response.getHttpMethod())
+	HttpMessage* httpResponse = new HttpMessage;
+	switch (httpRequest->getHttpMethod())
 	{
 		case HttpMethod::GET:
 		{
-			response.generateResponseForGET();
+			httpResponse.generateResponseForGET();
 			break;
 		}
 		case HttpMethod::POST:
 		{
-			response.generateResponseForPOST();
+			httpResponse.generateResponseForPOST();
 			break;
 		}
 		case HttpMethod::PUT:
 		{
-			response.generateResponseForPUT();
+			httpResponse.generateResponseForPUT();
 			break;
 		}
 		case HttpMethod::OPTIONS:
 		{
-			response.generateResponseForOPTIONS();
+			httpResponse.generateResponseForOPTIONS();
 			break;
 		}
 		case HttpMethod::HEAD:
 		{
-			response.generateResponseForHEAD();
+			httpResponse.generateResponseForHEAD();
 			break;
 		}
 		case HttpMethod::HTTP_DELETE:
 		{
-			response.generateResponseForDELETE();
+			httpResponse.generateResponseForDELETE();
 			break;
 		}
 		case HttpMethod::TRACE:
 		{
-			response.generateResponseForTRACE();
+			httpResponse.generateResponseForTRACE();
 			break;
 		}
 		default:
 		{
-			response.generateResponseForINVALID();
+			httpResponse.generateResponseForINVALID();
 			break;
 		}
 	}
 
-	return response;
+	return httpResponse;
 }
 
 void WebServer::receiveHttpRequest(Socket& socket, int requestSize)
@@ -154,14 +154,16 @@ void WebServer::receiveRequest(Socket& socket)
 
 void WebServer::sendResponse(Socket& socket)
 {
-	int bytesSent;
+	int bytesSent, messageSize;
 	char sendBuffer[bufferSize];
-	HttpMessage* httpRequest = socket.getRequest(), httpResponse = generateHttpResponse(httpRequest);
-	// httpResponse to buffer...
-	bytesSent = send(socket.getWindowsSocket(), sendBuffer, 0/* httpResponse.size... */, 0);
+	HttpMessage* httpRequest = socket.getRequest(), * httpResponse = generateHttpResponse(httpRequest);
+	messageSize = httpResponse->writeToBuffer(sendBuffer);
+	bytesSent = send(socket.getWindowsSocket(), sendBuffer, messageSize, 0);
 	if (bytesSent == SOCKET_ERROR)
 	{
-		// Error...
+		socket.close();
+		socket.setInactive(); // Remove later all inactive sockets...
+		std::cout << "Send error: " + std::to_string(WSAGetLastError()) << std::endl;
 		return;
 	}
 	socket.setSend(false);

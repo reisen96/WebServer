@@ -1,56 +1,29 @@
 #include "HttpMessage.h"
 
-void HttpMessage::setHttpMethod(std::string& methodString)
-{
-	httpMethod = stringToMethod.at(methodString);
-}
-
-void HttpMessage::setRequestPath(std::string& requestPath)
-{
-	this->requestPath = requestPath;
-}
-
-void HttpMessage::setHttpVersion(std::string& httpVersion)
-{
-	this->httpVersion = httpVersion;
-}
-
-void HttpMessage::setStatusCode(int code)
-{
-	this->statusCode = code;
-}
-
-void HttpMessage::setResponseMessage(std::string& response)
-{
-	this->responseMessage = response;
-}
-
-void HttpMessage::setResponseBody(std::string& response)
-{
-	this->httpBody = response;
-}
-
-void HttpMessage::setHttpHeaders(std::stringstream& requestString)
-{
-	std::string key, value;
-	do 
-	{
-		std::getline(requestString, key, ' ');
-		std::getline(requestString, value);
-		if (key != "")
-			httpHeaders[key] = value;
-	} while (key != "");
-}
-
-void HttpMessage::setHttpBody(std::stringstream& requestString)
-{
-	std::getline(requestString, httpBody, '\0');
-}
-
 HttpMessage::HttpMessage()
 {
 	httpMethod = HttpMethod::GET;
+	httpVersion = "HTTP/1.1";
 	statusCode = contentLength = 0;
+}
+
+void HttpMessage::setHttpHeadersAndBody(std::stringstream& requestString)
+{
+	std::string key, value;
+	std::getline(requestString, value);
+	do 
+	{
+		if (requestString.str()[requestString.tellg()] != '\r') 
+		{
+			std::getline(requestString, key, ' ');
+			key[key.length() - 1] = '\0';
+			std::getline(requestString, value, '\r');
+			httpHeaders[key] = value;
+			std::getline(requestString, value);
+		}
+	} while (requestString.str()[requestString.tellg()] != '\r');
+	std::getline(requestString, value);
+	std::getline(requestString, httpBody);
 }
 
 HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
@@ -62,16 +35,15 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 	newMessage->setHttpMethod(value);
 	std::getline(requestString, value, ' ');
 	newMessage->setRequestPath(value);
-	std::getline(requestString, value);
+	std::getline(requestString, value, '\r');
 	newMessage->setHttpVersion(value);
-	newMessage->setHttpHeaders(requestString);
-	newMessage->setHttpBody(requestString);
+	newMessage->setHttpHeadersAndBody(requestString);
 	return newMessage;
 }
 
-HttpMessage* HttpMessage::buildResponse(char* buffer, int position)
+int HttpMessage::writeToBuffer(char* buffer)
 {
-	return nullptr;
+
 }
 
 void HttpMessage::generateResponseForGET() {

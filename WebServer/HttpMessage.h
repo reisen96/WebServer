@@ -35,25 +35,24 @@ private:
 	int contentLength;
 	std::string httpBody;
 
-	void setHttpBody(std::stringstream& requestString);
-
+	void setHttpHeadersAndBody(std::stringstream& requestString);
 public:
 
 	HttpMessage();
 
-	HttpMethod getHttpMethod() { return httpMethod; }
 	static HttpMessage* buildRequest(char* buffer, int position);
-	static HttpMessage* buildResponse(char* buffer, int position);
+	int writeToBuffer(char* buffer);
 
-	void setStatusCode(int code);
-	void setHttpMethod(std::string& methodString);
-	void setRequestPath(std::string& requestPath);
-	void setHttpVersion(std::string& httpVersion);
-	void setResponseMessage(std::string& response);
-	void setResponseBody(std::string& response);
-	void setHttpHeaders(std::stringstream& requestString);
+	HttpMethod getHttpMethod() { return httpMethod; }
 
-
+	void setStatusCode(int statusCode) { this->statusCode = statusCode; }
+	void setHttpMethod(std::string& methodString) { httpMethod = stringToMethod.at(methodString); }
+	void setHttpMethod(HttpMethod httpMethod) { this->httpMethod = httpMethod; }
+	void setRequestPath(std::string& requestPath) { this->requestPath = requestPath; }
+	void setHttpVersion(std::string& httpVersion) { this->httpVersion = httpVersion; }
+	void setResponseMessage(std::string& responseMessage) { this->responseMessage = responseMessage; }
+	void setResponseBody(std::string& httpBody) { this->httpBody = httpBody; }
+	
 	void generateResponseForGET();
 	void generateResponseForPOST();
 	void generateResponseForPUT();
