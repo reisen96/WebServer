@@ -5,6 +5,7 @@ Socket::Socket()
 	socketReceiveState = SocketState::Inactive;
 	socketSendState = SocketState::Inactive;
 	bufferPosition = 0;
+	httpRequest = nullptr;
 }
 
 Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState, SocketState sendState)
@@ -14,6 +15,7 @@ Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState re
 	this->socketReceiveState = receiveState;
 	this->socketSendState = sendState;
 	bufferPosition = 0;
+	httpRequest = nullptr;
 }
 
 Socket::~Socket()
@@ -104,4 +106,11 @@ void Socket::close()
 	socketReceiveState = SocketState::Inactive;
 	socketSendState = SocketState::Inactive;
 	closesocket(windowsSocket);
+}
+
+HttpMessage* Socket::getRequest()
+{
+	HttpMessage* currentRequest = httpRequests.front();
+	httpRequests.pop();
+	return currentRequest;
 }

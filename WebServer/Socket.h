@@ -23,7 +23,7 @@ private:
 	SocketState socketSendState;
 	int bufferPosition;
 	char socketBuffer[bufferSize];
-	HttpMessage httpRequest;
+	std::queue<HttpMessage*> httpRequests;
 
 	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
 	
@@ -60,18 +60,6 @@ public:
 	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
 	void close();
 
-	void setRequest(HttpMessage& httpRequest) { this->httpRequest = httpRequest; }
-	HttpMessage& getRequest() { return httpRequest; }
-
-
-	// Client clientRequest, clientResponse; // ???
-	// Client getClientRequest() { return clientRequest; }
-	// Client getClientResponse() { return clientResponse; }
-	// bool checkValidResponse();
-	// void generateValidResponse();
-	// void generateInvalidResponse();
-	// void addMessage();
-	// void getRequest();
-	// char* getMessage();
-	// void cleanSocket();
+	void addRequest(HttpMessage* httpRequest) { httpRequests.push(httpRequest); }
+	HttpMessage* getRequest();
 };

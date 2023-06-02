@@ -8,6 +8,7 @@
 #include <ctime>
 #include <vector>
 #include <unordered_map>
+#include <queue>
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
