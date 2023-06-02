@@ -53,7 +53,7 @@ public:
 	void setHttpMethod(HttpMethod httpMethod) { this->httpMethod = httpMethod; }
 	void setRequestPath(std::string& requestPath) { this->requestPath = requestPath; }
 	void setHttpVersion(std::string& httpVersion) { this->httpVersion = httpVersion; }
-	void setResponseMessage(std::string& responseMessage) { this->responseMessage = responseMessage; }
+	void setResponseMessage(const std::string& responseMessage) { this->responseMessage = responseMessage; }
 	void setResponseBody(std::string& httpBody) { this->httpBody = httpBody; }
 };
 

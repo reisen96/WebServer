@@ -188,9 +188,10 @@ void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* ht
 
 void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-	std::string answer = "Our options are: GET, POST, PUT, OPTIONS, HEAD, DELETE, TRACE";
-	//this->setStatusCode(200);
-	//this->setResponseBody(answer);
+	std::string responseString = "Supported methods: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE";
+	httpResponse->setStatusCode(200);
+	httpResponse->setResponseMessage("OK");
+	httpResponse->setResponseBody(responseString);
 }
 
 void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse)
@@ -210,6 +211,8 @@ void WebServer::generateResponseForTRACE(HttpMessage* httpRequest, HttpMessage* 
 
 void WebServer::generateResponseForINVALID(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-	std::string answer = "Invalid option!";
-	//this->setResponseBody(answer);
+	std::string responseString = "Invalid request";
+	httpResponse->setStatusCode(400);
+	httpResponse->setResponseMessage("Bad Request");
+	httpResponse->setResponseBody(responseString);
 }
