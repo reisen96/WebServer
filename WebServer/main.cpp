@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
 		WebServer webServer;
 		webServer.run();
 	}
-	catch (std::exception exception) 
+	catch (const std::exception exception)
 	{
 		std::cout << exception.what() << std::endl;
 	}

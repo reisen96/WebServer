@@ -14,63 +14,20 @@ WebServer::~WebServer()
 {
 	for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
 		socket.close();
+	serverSockets.clear();
 	WSACleanup();
 }
 
-void WebServer::run()
+void WebServer::prepareSockets()
 {
-	int readySockets;
-	while (true) 
-	{
-		try 
-		{
-			FD_ZERO(&receiveSockets);
-			FD_ZERO(&sendSockets);
-			for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
-			{
-				if (socket.listenState() || socket.receiveState())
-					FD_SET(socket.getWindowsSocket(), &receiveSockets);
-				if (socket.sendState())
-					FD_SET(socket.getWindowsSocket(), &sendSockets);
-			}
-			readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
-			if (readySockets == SOCKET_ERROR) {
-				std::cout << std::string("Select error: ") + std::to_string(WSAGetLastError()) << std::endl;
-				throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
-			}
-
-			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
-			{
-				if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
-				{
-					--readySockets;
-					if (serverSockets[i].listenState())
-					{
-						serverSockets.push_back(serverSockets[i].acceptConnection());
-						Socket& newSocket = serverSockets.back();
-						newSocket.setMode(false);
-						newSocket.setReceive(true);
-					}
-					else if (serverSockets[i].receiveState())
-						receiveRequest(serverSockets[i]);
-				}
-			}
-
-			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
-			{
-				if (FD_ISSET(serverSockets[i].getWindowsSocket(), &sendSockets))
-				{
-					--readySockets;
-					if (serverSockets[i].sendState())
-						sendResponse(serverSockets[i]);
-				}
-			}
-		}
-		catch (std::exception serverException) 
-		{
-			std::cout << serverException.what() << std::endl;
-		}
-	}
+	std::vector<Socket>::iterator currentSocket = serverSockets.begin();
+	while (currentSocket != serverSockets.end())
+		if (currentSocket->isInactive())
+			serverSockets.erase(currentSocket);
+		else
+			++currentSocket;
+	FD_ZERO(&receiveSockets);
+	FD_ZERO(&sendSockets);
 }
 
 HttpMessage* WebServer::generateHttpResponse(HttpMessage* httpRequest)
@@ -136,14 +93,14 @@ void WebServer::receiveRequest(Socket& socket)
 	if (bytesReceived == SOCKET_ERROR)
 	{
 		socket.close();
-		socket.setInactive(); // Remove later all inactive sockets...
+		socket.setInactive();
 		std::cout << "Receive error: " + std::to_string(WSAGetLastError()) << std::endl;
 		return;
 	}
 	if (!bytesReceived)
 	{
 		socket.close();
-		socket.setInactive(); // Remove later all inactive sockets...
+		socket.setInactive();
 		return;
 	}
 	socket += bytesReceived + 1;
@@ -162,7 +119,7 @@ void WebServer::sendResponse(Socket& socket)
 	if (bytesSent == SOCKET_ERROR)
 	{
 		socket.close();
-		socket.setInactive(); // Remove later all inactive sockets...
+		socket.setInactive();
 		std::cout << "Send error: " + std::to_string(WSAGetLastError()) << std::endl;
 		return;
 	}
@@ -219,4 +176,56 @@ void WebServer::generateResponseForINVALID(HttpMessage* httpRequest, HttpMessage
 	httpResponse->setStatusCode(400);
 	httpResponse->setResponseMessage("Bad Request");
 	httpResponse->setResponseBody(responseString);
+}
+
+void WebServer::run()
+{
+	int readySockets;
+	while (true)
+	{
+		try
+		{
+			prepareSockets();
+			for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+			{
+				if (socket.listenState() || socket.receiveState())
+					FD_SET(socket.getWindowsSocket(), &receiveSockets);
+				if (socket.sendState())
+					FD_SET(socket.getWindowsSocket(), &sendSockets);
+			}
+			readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
+			if (readySockets == SOCKET_ERROR)
+				throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
+			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
+			{
+				if (FD_ISSET(serverSockets[i].getWindowsSocket(), &receiveSockets))
+				{
+					--readySockets;
+					if (serverSockets[i].listenState())
+					{
+						serverSockets.push_back(serverSockets[i].acceptConnection());
+						Socket& newSocket = serverSockets.back();
+						newSocket.setMode(false);
+						newSocket.setReceive(true);
+					}
+					else if (serverSockets[i].receiveState())
+						receiveRequest(serverSockets[i]);
+				}
+			}
+
+			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
+			{
+				if (FD_ISSET(serverSockets[i].getWindowsSocket(), &sendSockets))
+				{
+					--readySockets;
+					if (serverSockets[i].sendState())
+						sendResponse(serverSockets[i]);
+				}
+			}
+		}
+		catch (const std::exception serverException)
+		{
+			std::cout << serverException.what() << std::endl;
+		}
+	}
 }

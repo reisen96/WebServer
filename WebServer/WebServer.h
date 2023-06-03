@@ -12,6 +12,7 @@ private:
 	fd_set receiveSockets;
 	fd_set sendSockets;
 
+	void prepareSockets();
 	HttpMessage* generateHttpResponse(HttpMessage* httpRequest);
 	void receiveHttpRequest(Socket& socket, int requestSize);
 	void receiveRequest(Socket& socket);
