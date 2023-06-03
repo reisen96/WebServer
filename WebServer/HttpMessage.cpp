@@ -72,6 +72,8 @@ int HttpMessage::writeResponseToBuffer(char* buffer)
 		buffer[messageSize++] = '\r';
 		buffer[messageSize++] = '\n';
 	}
+	buffer[messageSize++] = '\r';
+	buffer[messageSize++] = '\n';
 	for (char ch : httpBody)
 		buffer[messageSize++] = ch;
 	buffer[messageSize++] = '\r';
@@ -90,4 +92,10 @@ std::string HttpMessage::getQueryParameter(const std::string& key)
 {
 	size_t start = requestPath.find(key) + key.length() + 1u, end = requestPath.find('&', start);
 	return requestPath.substr(start, end - start);
+}
+
+void HttpMessage::setContentLength(int contentLength)
+{
+	this->contentLength = contentLength;
+	httpHeaders["Content-Length"] = std::to_string(contentLength);
 }

@@ -23,7 +23,7 @@ void WebServer::prepareSockets()
 	std::vector<Socket>::iterator currentSocket = serverSockets.begin();
 	while (currentSocket != serverSockets.end())
 		if (currentSocket->isInactive())
-			serverSockets.erase(currentSocket);
+			currentSocket = serverSockets.erase(currentSocket);
 		else
 			++currentSocket;
 	FD_ZERO(&receiveSockets);
@@ -106,8 +106,11 @@ void WebServer::receiveRequest(Socket& socket)
 	}
 	if (!bytesReceived)
 	{
-		socket.close();
-		socket.setInactive();
+		if (!socket.sendState()) 
+		{
+			socket.close();
+			socket.setInactive();
+		}
 		return;
 	}
 	socket += bytesReceived + 1;
@@ -132,7 +135,7 @@ void WebServer::sendResponse(Socket& socket)
 		delete httpResponse;
 		return;
 	}
-	socket.setSend(false);
+	socket.setSend(!socket.isRequestsQueueEmpty());
 	delete httpRequest;
 	delete httpResponse;
 }
@@ -152,6 +155,7 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 		htmlFile.open(requestedResource, std::ios::in);
 		buffer << htmlFile.rdbuf();
 		htmlFile.close();
+		httpResponse->setContentLength((int)buffer.str().length() + 1);
 		httpResponse->setResponseBody(buffer.str());
 		httpResponse->setStatusCode(200);
 		httpResponse->setResponseMessage("OK");

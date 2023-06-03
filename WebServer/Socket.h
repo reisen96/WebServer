@@ -50,6 +50,7 @@ public:
 	bool listenState() { return socketReceiveState == SocketState::Listen; }
 	bool receiveState() { return socketReceiveState == SocketState::Receive; }
 	bool sendState() { return socketSendState == SocketState::Send; }
+	bool isRequestsQueueEmpty() { return httpRequests.empty(); }
 	
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 

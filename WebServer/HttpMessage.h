@@ -51,6 +51,7 @@ public:
 	std::string& getHttpBody() { return httpBody; }
 
 	void setStatusCode(int statusCode) { this->statusCode = statusCode; }
+	void setContentLength(int contentLength);
 	void setHttpMethod(std::string& methodString) { httpMethod = stringToMethod.at(methodString); }
 	void setHttpMethod(HttpMethod httpMethod) { this->httpMethod = httpMethod; }
 	void setRequestPath(std::string& requestPath) { this->requestPath = requestPath; }
