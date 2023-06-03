@@ -42,12 +42,13 @@ public:
 	HttpMessage();
 
 	static HttpMessage* buildRequest(char* buffer, int position);
-	int writeToBuffer(char* buffer);
+	void initializeResponseHeaders();
+	int writeResponseToBuffer(char* buffer);
 
 	HttpMethod getHttpMethod() { return httpMethod; }
+	std::string getRequestPath();
+	std::string getQueryParameter(const std::string& key);
 	std::string& getHttpBody() { return httpBody; }
-
-	void initializeResponseHeaders();
 
 	void setStatusCode(int statusCode) { this->statusCode = statusCode; }
 	void setHttpMethod(std::string& methodString) { httpMethod = stringToMethod.at(methodString); }
@@ -55,6 +56,7 @@ public:
 	void setRequestPath(std::string& requestPath) { this->requestPath = requestPath; }
 	void setHttpVersion(std::string& httpVersion) { this->httpVersion = httpVersion; }
 	void setResponseMessage(const std::string& responseMessage) { this->responseMessage = responseMessage; }
-	void setResponseBody(std::string& httpBody) { this->httpBody = httpBody; }
+	void setResponseBody(const std::string& httpBody) { this->httpBody = httpBody; }
+	void addResponseHeader(const std::string& key, const std::string& value) { httpHeaders[key] = value; }
 };
 

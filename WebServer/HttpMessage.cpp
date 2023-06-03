@@ -48,7 +48,7 @@ HttpMessage* HttpMessage::buildRequest(char* buffer, int position)
 	return newMessage;
 }
 
-int HttpMessage::writeToBuffer(char* buffer)
+int HttpMessage::writeResponseToBuffer(char* buffer)
 {
 	int messageSize = 0;
 	for (char ch : httpVersion)
@@ -78,4 +78,16 @@ int HttpMessage::writeToBuffer(char* buffer)
 	buffer[messageSize++] = '\n';
 	buffer[messageSize + 1] = '\0';
 	return messageSize;
+}
+
+std::string HttpMessage::getRequestPath()
+{
+	size_t start = requestPath.find('/') + 1u, end = requestPath.find('?');
+	return requestPath.substr(start, end - start);
+}
+
+std::string HttpMessage::getQueryParameter(const std::string& key)
+{
+	size_t start = requestPath.find(key) + key.length() + 1u, end = requestPath.find('&', start);
+	return requestPath.substr(start, end - start);
 }

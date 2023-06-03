@@ -28,6 +28,13 @@ void WebServer::prepareSockets()
 			++currentSocket;
 	FD_ZERO(&receiveSockets);
 	FD_ZERO(&sendSockets);
+	for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
+	{
+		if (socket.listenState() || socket.receiveState())
+			FD_SET(socket.getWindowsSocket(), &receiveSockets);
+		if (socket.sendState())
+			FD_SET(socket.getWindowsSocket(), &sendSockets);
+	}
 }
 
 HttpMessage* WebServer::generateHttpResponse(HttpMessage* httpRequest)
@@ -114,13 +121,15 @@ void WebServer::sendResponse(Socket& socket)
 	int bytesSent, messageSize;
 	char sendBuffer[bufferSize];
 	HttpMessage* httpRequest = socket.getRequest(), * httpResponse = generateHttpResponse(httpRequest);
-	messageSize = httpResponse->writeToBuffer(sendBuffer);
+	messageSize = httpResponse->writeResponseToBuffer(sendBuffer);
 	bytesSent = send(socket.getWindowsSocket(), sendBuffer, messageSize, 0);
 	if (bytesSent == SOCKET_ERROR)
 	{
 		socket.close();
 		socket.setInactive();
 		std::cout << "Send error: " + std::to_string(WSAGetLastError()) << std::endl;
+		delete httpRequest;
+		delete httpResponse;
 		return;
 	}
 	socket.setSend(false);
@@ -130,7 +139,28 @@ void WebServer::sendResponse(Socket& socket)
 
 void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	std::ifstream htmlFile;
+	std::stringstream buffer;
+	std::string requestedResource;
+	std::string resourcePath = httpRequest->getRequestPath(), resourceLanguage = httpRequest->getQueryParameter("lang");
+	if (serverResources.count(resourcePath) != 0)
+	{
+		if (resourceLanguage == "he")
+			requestedResource = serverResources.at("indexhe.htm");
+		else
+			requestedResource = serverResources.at(resourcePath);
+		htmlFile.open(requestedResource, std::ios::in);
+		buffer << htmlFile.rdbuf();
+		htmlFile.close();
+		httpResponse->setResponseBody(buffer.str());
+		httpResponse->setStatusCode(200);
+		httpResponse->setResponseMessage("OK");
+	}
+	else 
+	{
+		httpResponse->setStatusCode(404);
+		httpResponse->setResponseMessage("Not Found");
+	}
 }
 
 void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
@@ -149,15 +179,15 @@ void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* ht
 
 void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-	std::string responseString = "Supported methods: OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE";
+	httpResponse->addResponseHeader("Allow", "OPTIONS,GET,HEAD,POST,PUT,DELETE,TRACE");
 	httpResponse->setStatusCode(200);
 	httpResponse->setResponseMessage("OK");
-	httpResponse->setResponseBody(responseString);
 }
 
 void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	httpResponse->setStatusCode(200);
+	httpResponse->setResponseMessage("OK");
 }
 
 void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
@@ -186,13 +216,6 @@ void WebServer::run()
 		try
 		{
 			prepareSockets();
-			for (std::vector<Socket>::iterator::value_type& socket : serverSockets)
-			{
-				if (socket.listenState() || socket.receiveState())
-					FD_SET(socket.getWindowsSocket(), &receiveSockets);
-				if (socket.sendState())
-					FD_SET(socket.getWindowsSocket(), &sendSockets);
-			}
 			readySockets = select(0, &receiveSockets, &sendSockets, NULL, NULL);
 			if (readySockets == SOCKET_ERROR)
 				throw NetworkException(std::string("Select error: ") + std::to_string(WSAGetLastError()));
@@ -212,7 +235,6 @@ void WebServer::run()
 						receiveRequest(serverSockets[i]);
 				}
 			}
-
 			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)
 			{
 				if (FD_ISSET(serverSockets[i].getWindowsSocket(), &sendSockets))

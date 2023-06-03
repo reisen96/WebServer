@@ -8,6 +8,11 @@ private:
 
 	const unsigned short serverPort = 8080u;
 	const int serverBacklog = 5;
+
+	const std::unordered_map<std::string, std::string> serverResources =
+	{ {"index.htm","C:\\temp\\index.htm"},
+	  {"indexhe.htm","C:\\temp\\indexhe.htm"} };
+
 	std::vector<Socket> serverSockets;
 	fd_set receiveSockets;
 	fd_set sendSockets;
