@@ -27,6 +27,7 @@ private:
 		{"TRACE",HttpMethod::TRACE} };
 
 	HttpMethod httpMethod;
+	std::string methodString;
 	std::string httpVersion;
 	std::string requestPath;
 	std::string responseMessage;
@@ -36,6 +37,7 @@ private:
 	std::string httpBody;
 
 	void setHttpHeadersAndBody(std::stringstream& requestString);
+	void httpHeadersAndBodyToBuffer(char* buffer, int& messageSize);
 	
 public:
 
@@ -44,6 +46,7 @@ public:
 	static HttpMessage* buildRequest(char* buffer, int position);
 	void initializeResponseHeaders();
 	int writeResponseToBuffer(char* buffer);
+	int writeRequestToBuffer(char* buffer);
 
 	HttpMethod getHttpMethod() { return httpMethod; }
 	std::string getRequestPath();

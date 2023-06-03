@@ -146,6 +146,7 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 	std::stringstream buffer;
 	std::string requestedResource;
 	std::string resourcePath = httpRequest->getRequestPath(), resourceLanguage = httpRequest->getQueryParameter("lang");
+	httpResponse->setHttpMethod(HttpMethod::GET);
 	if (serverResources.count(resourcePath) != 0)
 	{
 		if (resourceLanguage == "he")
@@ -170,14 +171,19 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
 	std::string resourcePath = httpRequest->getRequestPath(), requestStrings = httpRequest->getHttpBody();
+	httpResponse->setHttpMethod(HttpMethod::POST);
 	if (resourcePath == "echo") 
 	{
 		std::cout << "Request strings:" << std::endl << requestStrings << std::endl;
+		httpResponse->setResponseBody("POST Success");
+		httpResponse->setContentLength(sizeof("POST Success"));
 		httpResponse->setStatusCode(200);
 		httpResponse->setResponseMessage("OK");
 	}
 	else 
 	{
+		httpResponse->setResponseBody("POST Fail");
+		httpResponse->setContentLength(sizeof("POST Fail"));
 		httpResponse->setStatusCode(404);
 		httpResponse->setResponseMessage("Not Found");
 	}
@@ -185,11 +191,12 @@ void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* h
 
 void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	httpResponse->setHttpMethod(HttpMethod::PUT);
 }
 
 void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
+	httpResponse->setHttpMethod(HttpMethod::OPTIONS);
 	httpResponse->addResponseHeader("Allow", "OPTIONS,GET,HEAD,POST,PUT,DELETE,TRACE");
 	httpResponse->setStatusCode(200);
 	httpResponse->setResponseMessage("OK");
@@ -198,25 +205,35 @@ void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage
 void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
 	generateResponseForGET(httpRequest, httpResponse);
+	httpResponse->setHttpMethod(HttpMethod::HEAD);
 	httpResponse->setResponseBody("");
 }
 
 void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	httpResponse->setHttpMethod(HttpMethod::HTTP_DELETE);
 }
 
 void WebServer::generateResponseForTRACE(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-
+	char buffer[bufferSize];
+	int contentLength = httpRequest->writeRequestToBuffer(buffer);
+	std::string requestString(buffer);
+	httpResponse->setHttpMethod(HttpMethod::TRACE);
+	httpResponse->setResponseBody(requestString);
+	httpResponse->setContentLength(contentLength);
+	httpResponse->setStatusCode(200);
+	httpResponse->setResponseMessage("OK");
 }
 
 void WebServer::generateResponseForINVALID(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
 	std::string responseString = "Invalid request";
+	httpResponse->setHttpMethod(HttpMethod::NONE);
 	httpResponse->setStatusCode(400);
 	httpResponse->setResponseMessage("Bad Request");
 	httpResponse->setResponseBody(responseString);
+	httpResponse->setContentLength((int)responseString.length());
 }
 
 void WebServer::run()
