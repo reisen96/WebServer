@@ -169,11 +169,18 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 
 void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-	std::string requestStrings = httpRequest->getHttpBody();
-	// if path == "/echo...
-	std::cout << requestStrings;
-	httpResponse->setStatusCode(200);
-	httpResponse->setResponseMessage("OK");
+	std::string resourcePath = httpRequest->getRequestPath(), requestStrings = httpRequest->getHttpBody();
+	if (resourcePath == "echo") 
+	{
+		std::cout << "Request strings:" << std::endl << requestStrings << std::endl;
+		httpResponse->setStatusCode(200);
+		httpResponse->setResponseMessage("OK");
+	}
+	else 
+	{
+		httpResponse->setStatusCode(404);
+		httpResponse->setResponseMessage("Not Found");
+	}
 }
 
 void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse)
@@ -190,8 +197,8 @@ void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage
 
 void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
-	httpResponse->setStatusCode(200);
-	httpResponse->setResponseMessage("OK");
+	generateResponseForGET(httpRequest, httpResponse);
+	httpResponse->setResponseBody("");
 }
 
 void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
