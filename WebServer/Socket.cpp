@@ -5,6 +5,7 @@ Socket::Socket()
 	socketReceiveState = SocketState::Inactive;
 	socketSendState = SocketState::Inactive;
 	bufferPosition = 0;
+	lastReceivedTime = GetTickCount();
 }
 
 Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState, SocketState sendState)
@@ -14,6 +15,7 @@ Socket::Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState re
 	this->socketReceiveState = receiveState;
 	this->socketSendState = sendState;
 	bufferPosition = 0;
+	lastReceivedTime = GetTickCount();
 }
 
 Socket& Socket::operator=(const Socket& other)
@@ -25,6 +27,7 @@ Socket& Socket::operator=(const Socket& other)
 	this->socketReceiveState = other.socketReceiveState;
 	this->socketSendState = other.socketSendState;
 	bufferPosition = 0;
+	lastReceivedTime = GetTickCount();
 	return *this;
 }
 

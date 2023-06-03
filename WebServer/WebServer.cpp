@@ -117,6 +117,7 @@ void WebServer::receiveRequest(Socket& socket)
 	socket[socket.getBufferPosition() - 1] = '\0';
 	receiveHttpRequest(socket, bytesReceived);
 	socket.setSend(true);
+	socket.setReceiveTime();
 }
 
 void WebServer::sendResponse(Socket& socket)
@@ -314,8 +315,16 @@ void WebServer::run()
 						newSocket.setMode(false);
 						newSocket.setReceive(true);
 					}
-					else if (serverSockets[i].receiveState())
-						receiveRequest(serverSockets[i]);
+					else if (serverSockets[i].receiveState()) 
+					{
+						if (!serverSockets[i].isTimeoutExpired())
+							receiveRequest(serverSockets[i]);
+						else 
+						{
+							serverSockets[i].close();
+							serverSockets[i].setInactive();
+						}
+					}
 				}
 			}
 			for (int i = 0; i < serverSockets.size() && readySockets > 0; ++i)

@@ -3,6 +3,7 @@
 #include "HttpMessage.h"
 
 constexpr int bufferSize = 4096;
+constexpr unsigned long connectionTimeout = 120000u;
 
 class Socket
 {
@@ -23,6 +24,7 @@ private:
 	SocketState socketSendState;
 	int bufferPosition;
 	char socketBuffer[bufferSize];
+	unsigned long lastReceivedTime;
 	std::queue<HttpMessage*> httpRequests;
 
 	Socket(SOCKET& windowsSocket, sockaddr_in& socketAddress, SocketState receiveState = SocketState::Inactive, SocketState sendState = SocketState::Inactive);
@@ -51,6 +53,7 @@ public:
 	bool receiveState() { return socketReceiveState == SocketState::Receive; }
 	bool sendState() { return socketSendState == SocketState::Send; }
 	bool isRequestsQueueEmpty() { return httpRequests.empty(); }
+	bool isTimeoutExpired() { return GetTickCount() - lastReceivedTime > connectionTimeout; }
 	
 	void initialize(const std::string& ipAddress, unsigned short port, int type = SOCK_DGRAM, int protocol = IPPROTO_UDP);
 
@@ -60,6 +63,7 @@ public:
 	void setReceive(bool receiveState) { socketReceiveState = receiveState ? SocketState::Receive : SocketState::Inactive; }
 	void setSend(bool sendState) { socketSendState = sendState ? SocketState::Send : SocketState::Inactive; }
 	void setInactive() { socketReceiveState = socketSendState = SocketState::Inactive; }
+	void setReceiveTime() { lastReceivedTime = GetTickCount(); }
 	void close();
 
 	void addRequest(HttpMessage* httpRequest) { httpRequests.push(httpRequest); }
