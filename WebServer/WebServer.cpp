@@ -154,12 +154,21 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 		else
 			requestedResource = serverResources.at(resourcePath);
 		htmlFile.open(requestedResource, std::ios::in);
-		buffer << htmlFile.rdbuf();
-		htmlFile.close();
-		httpResponse->setContentLength((int)buffer.str().length());
-		httpResponse->setResponseBody(buffer.str());
-		httpResponse->setStatusCode(200);
-		httpResponse->setResponseMessage("OK");
+		if (htmlFile.is_open()) 
+		{
+			buffer << htmlFile.rdbuf();
+			htmlFile.close();
+			httpResponse->setContentLength((int)buffer.str().length());
+			httpResponse->setResponseBody(buffer.str());
+			httpResponse->setStatusCode(200);
+			httpResponse->setResponseMessage("OK");
+		}
+		else 
+		{
+			httpResponse->setContentLength(0);
+			httpResponse->setStatusCode(404);
+			httpResponse->setResponseMessage("Not Found");
+		}
 	}
 	else 
 	{
@@ -171,20 +180,23 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 
 void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
+	std::string responseString;
 	std::string resourcePath = httpRequest->getRequestPath(), requestStrings = httpRequest->getHttpBody();
 	httpResponse->setHttpMethod(HttpMethod::POST);
 	if (resourcePath == "echo") 
 	{
+		responseString = "POST Success";
 		std::cout << "Request strings:" << std::endl << requestStrings << std::endl;
-		httpResponse->setResponseBody("POST Success");
-		httpResponse->setContentLength(sizeof("POST Success") - 1);
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
 		httpResponse->setStatusCode(200);
 		httpResponse->setResponseMessage("OK");
 	}
 	else 
 	{
-		httpResponse->setResponseBody("POST Fail");
-		httpResponse->setContentLength(sizeof("POST Fail") - 1);
+		responseString = "POST Fail";
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
 		httpResponse->setStatusCode(404);
 		httpResponse->setResponseMessage("Not Found");
 	}
@@ -230,6 +242,7 @@ void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* h
 	generateResponseForGET(httpRequest, httpResponse);
 	httpResponse->setHttpMethod(HttpMethod::HEAD);
 	httpResponse->setResponseBody("");
+	httpResponse->setContentLength(0);
 }
 
 void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
