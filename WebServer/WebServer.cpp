@@ -156,13 +156,14 @@ void WebServer::generateResponseForGET(HttpMessage* httpRequest, HttpMessage* ht
 		htmlFile.open(requestedResource, std::ios::in);
 		buffer << htmlFile.rdbuf();
 		htmlFile.close();
-		httpResponse->setContentLength((int)buffer.str().length() + 1);
+		httpResponse->setContentLength((int)buffer.str().length());
 		httpResponse->setResponseBody(buffer.str());
 		httpResponse->setStatusCode(200);
 		httpResponse->setResponseMessage("OK");
 	}
 	else 
 	{
+		httpResponse->setContentLength(0);
 		httpResponse->setStatusCode(404);
 		httpResponse->setResponseMessage("Not Found");
 	}
@@ -176,14 +177,14 @@ void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* h
 	{
 		std::cout << "Request strings:" << std::endl << requestStrings << std::endl;
 		httpResponse->setResponseBody("POST Success");
-		httpResponse->setContentLength(sizeof("POST Success"));
+		httpResponse->setContentLength(sizeof("POST Success") - 1);
 		httpResponse->setStatusCode(200);
 		httpResponse->setResponseMessage("OK");
 	}
 	else 
 	{
 		httpResponse->setResponseBody("POST Fail");
-		httpResponse->setContentLength(sizeof("POST Fail"));
+		httpResponse->setContentLength(sizeof("POST Fail") - 1);
 		httpResponse->setStatusCode(404);
 		httpResponse->setResponseMessage("Not Found");
 	}
@@ -191,7 +192,29 @@ void WebServer::generateResponseForPOST(HttpMessage* httpRequest, HttpMessage* h
 
 void WebServer::generateResponseForPUT(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
+	std::string responseString;
+	std::stringstream fileContent(httpRequest->getHttpBody());
+	std::string fileToCreate = "C:\\temp\\" + httpRequest->getRequestPath();
+	std::ofstream newFile(fileToCreate);
 	httpResponse->setHttpMethod(HttpMethod::PUT);
+	if (newFile.is_open()) 
+	{
+		fileContent >> newFile.rdbuf();
+		responseString = "File " + httpRequest->getRequestPath() + " created";
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
+		httpResponse->setStatusCode(200);
+		httpResponse->setResponseMessage("OK");
+		newFile.close();
+	}
+	else
+	{
+		responseString = "Error creating file";
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
+		httpResponse->setStatusCode(400);
+		httpResponse->setResponseMessage("Bad Request");
+	}
 }
 
 void WebServer::generateResponseForOPTIONS(HttpMessage* httpRequest, HttpMessage* httpResponse)
@@ -211,17 +234,36 @@ void WebServer::generateResponseForHEAD(HttpMessage* httpRequest, HttpMessage* h
 
 void WebServer::generateResponseForDELETE(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
+	std::string responseString;
+	std::string fileToDelete = "C:\\temp\\" + httpRequest->getRequestPath();
 	httpResponse->setHttpMethod(HttpMethod::HTTP_DELETE);
+	if (!std::remove(fileToDelete.c_str()))
+	{
+		responseString = "File " + httpRequest->getRequestPath() + " deleted";
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
+		httpResponse->setStatusCode(200);
+		httpResponse->setResponseMessage("OK");
+	}
+	else 
+	{
+		responseString = "Error deleteing file";
+		httpResponse->setResponseBody(responseString);
+		httpResponse->setContentLength((int)responseString.length());
+		httpResponse->setStatusCode(400);
+		httpResponse->setResponseMessage("Bad Request");
+	}
 }
 
 void WebServer::generateResponseForTRACE(HttpMessage* httpRequest, HttpMessage* httpResponse)
 {
 	char buffer[bufferSize];
-	int contentLength = httpRequest->writeRequestToBuffer(buffer);
+	int requestSize = httpRequest->writeRequestToBuffer(buffer);
+	buffer[requestSize] = '\0';
 	std::string requestString(buffer);
 	httpResponse->setHttpMethod(HttpMethod::TRACE);
 	httpResponse->setResponseBody(requestString);
-	httpResponse->setContentLength(contentLength);
+	httpResponse->setContentLength((int)requestString.length());
 	httpResponse->setStatusCode(200);
 	httpResponse->setResponseMessage("OK");
 }

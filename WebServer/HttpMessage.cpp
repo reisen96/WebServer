@@ -46,7 +46,6 @@ void HttpMessage::httpHeadersAndBodyToBuffer(char* buffer, int& messageSize)
 	if (httpBody != "")
 		for (char ch : httpBody)
 			buffer[messageSize++] = ch;
-	buffer[messageSize++] = '\0';
 }
 
 void HttpMessage::initializeResponseHeaders()
